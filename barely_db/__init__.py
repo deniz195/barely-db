@@ -233,8 +233,10 @@ class BarelyDB(object):
     base_path = None
     property_file_glob = '*.property.json'
     preferred_property_files = []
+    ignored_files = ['desktop.ini']
 
-    def __init__(self, base_path):
+    def __init__(self, base_path, path_depth=0):
+        self.path_depth = path_depth
         self.base_path = Path(base_path)
         self.base_path = self.base_path.resolve().absolute()
 
@@ -248,7 +250,19 @@ class BarelyDB(object):
 
     def load_entities(self):
         # candidates = [x.relative_to(self.base_path) for x in self.base_path.iterdir() if x.is_dir()]
-        candidates = [x for x in self.base_path.iterdir() if x.is_dir()]
+        def iter_subdir(path, depth=0):
+            for sub in path.iterdir():
+                if sub.is_dir():
+                    if depth == 0:    
+                        yield sub
+                    else:
+                        for sub in iter_subdir(sub, depth-1):
+                            yield sub
+       
+        
+        # candidates = [x for x in self.base_path.iterdir() if x.is_dir()]
+        
+        candidates = iter_subdir(self.base_path, depth=self.path_depth)
 
         buid_p = BUIDParser(ignore_unknown=True, mode = 'first', warn_empty = False)
         candidates_buid = [(buid_p(c), c) for c in candidates]
@@ -272,11 +286,16 @@ class BarelyDB(object):
         path = self.entity_path(buid)
         files = path.glob(glob)
 
+        def ignore_file(fn):
+            return fn in self.ignored_files
+        
         if must_contain_buid:
             buid_p = BUIDParser(ignore_unknown=False, mode = 'first', warn_empty = False)
             files_sel = [fn for fn in files if (buid_p(fn) == buid)]
             files = files_sel
 
+        files = [fn for fn in files if not ignore_file(fn.name)]
+                    
         if output_as_str:
             files = [str(fn) for fn in files]
 
@@ -296,6 +315,8 @@ class BarelyDB(object):
         files = self.entity_properties_files(buid, output_as_str=False)
 
         properties = {}
+        properties['entity_path'] = self.entity_path(buid)
+        
         for fn in files:
             try:
                 with open(str(fn), 'r') as f:
