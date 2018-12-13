@@ -4,6 +4,7 @@ import datetime
 import numpy as np
 import pandas as pd
 import pint
+import sys
 
 import json
 import re
@@ -247,6 +248,23 @@ class BarelyDB(object):
 
         self.buid_normalizer = BUIDParser(ignore_unknown=True, mode = 'unique', warn_empty = True)
 
+        
+    def get_code_paths(self, depth=1, add_to_sys_path=False):              
+        code_path = base_path.joinpath('__code')
+
+        # sys.path.append(str(bdb_code_path))
+        paths = [code_path]
+        for p in bdb_code_path.iterdir():
+            if p.is_dir(): 
+                paths.append(p)
+             
+        paths = [str(p) for p in paths]
+        if add_to_sys_path:
+            for p in paths:
+                sys.path.append(p)
+                
+        return paths
+        
 
     def load_entities(self):
         # candidates = [x.relative_to(self.base_path) for x in self.base_path.iterdir() if x.is_dir()]
