@@ -250,11 +250,11 @@ class BarelyDB(object):
 
         
     def get_code_paths(self, depth=1, add_to_sys_path=False):              
-        code_path = base_path.joinpath('__code')
+        code_path = self.base_path.joinpath('__code')
 
         # sys.path.append(str(bdb_code_path))
         paths = [code_path]
-        for p in bdb_code_path.iterdir():
+        for p in code_path.iterdir():
             if p.is_dir(): 
                 paths.append(p)
              
