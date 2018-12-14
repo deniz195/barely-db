@@ -467,6 +467,42 @@ class BarelyDB(object):
         return result
 
 
+class BarelyDBEntity(object):
+    
+    def __init__(self, buid, parent_bdb):
+        self._buid = parent_bdb.buid_normalizer(buid)
+        self._bdb = parent_bdb
 
+    def __repr__(self):
+        return f'{self.__class__.__qualname__}(\'{self.buid}\')'
+    
+    @property
+    def buid(self):
+        return self._buid
+    
+    @property
+    def bdb(self):
+        return self._bdb
+    
+    
+    def entity_files(self, *args, **kwds):
+        return self.bdb.entity_files(self.buid, *args, **kwds)
 
+    def reload_entity_properties(self):
+        return self.bdb.reload_entity_properties(self.buid)
 
+    def get_entity_properties(self, reload = False):
+        return self.bdb.get_entity_properties(self.buid, reload=reload)
+
+    def get_entity_tree(self):
+        return self.bdb.get_entity_tree(self.buid)
+
+    def query_property(self, *args, **kwds):
+        return self.bdb.query_property(self.buid, *args, **kwds)
+
+    def query_properties(self, *args, **kwds):
+        return self.bdb.query_properties(self.buid, *args, **kwds)
+    
+
+    
+    
