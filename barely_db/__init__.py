@@ -5,12 +5,16 @@ import numpy as np
 import pandas as pd
 import pint
 import sys
+import os
 
 import json
 import re
 from pathlib import Path
 
+from collections import OrderedDict
 import objectpath # http://objectpath.org/reference.html
+
+from .file_management import FileManager, FileNameAnalyzer
 
 # create logger
 module_logger = logging.getLogger(__name__)
@@ -468,6 +472,7 @@ class BarelyDB(object):
 
 
 class BarelyDBEntity(object):
+    file_manager = None
     
     def __init__(self, buid, parent_bdb):
         self._buid = parent_bdb.buid_normalizer(buid)
@@ -483,8 +488,68 @@ class BarelyDBEntity(object):
     @property
     def bdb(self):
         return self._bdb
-    
-    
+
+    def resolve_relative_path(self, path):
+        base_bath = self.bdb.entity_path(self.buid)
+        
+        current_dir = str(Path.cwd())        
+        os.chdir(str(base_bath))
+        path_resolved = str(Path(path).resolve().absolute())
+        os.chdir(current_dir)
+        
+        return path_resolved
+            
+    def make_file_manager(self, 
+                 raw_path = './', 
+                 export_path = './',  
+                 export_prefix = '',
+                 secondary_data_paths = [],
+                 auto_string = True, 
+                 auto_remove_duplicates = True,
+                 **kwds):
+        
+        base_bath = self.bdb.entity_path(self.buid)
+
+        rebase_path = self.resolve_relative_path
+                
+        raw_path = rebase_path(str(raw_path))
+        export_path = rebase_path(str(export_path))
+        secondary_data_paths = [rebase_path(str(p)) for p in secondary_data_paths]
+        
+        options = kwds.copy()
+        options.update(dict(raw_path = raw_path, 
+                            export_path = export_path,  
+                            export_prefix = export_prefix,
+                            secondary_data_paths = secondary_data_paths,
+                            auto_string = auto_string, 
+                            auto_remove_duplicates = auto_remove_duplicates,
+                           ))
+        
+        return FileManager(**options)
+                 
+    def create_property_file(self,
+                             operator,
+                             source,
+                             property_file,
+                             **properties
+                            ):
+                
+        output = OrderedDict(buid = self.buid,
+                             operator = operator,
+                             source = source,
+                            )
+        
+        output.update(properties)
+        
+        json_default_opts = dict(indent=4)
+        output_json = json.dumps(output, **json_default_opts)
+        
+        property_file_res = self.resolve_relative_path(property_file)
+        with open(property_file_res, 'w') as fp:
+            fp.write(output_json)  
+        module_logger.info(f'Property written to file {property_file}.')
+        
+                
     def entity_files(self, *args, **kwds):
         return self.bdb.entity_files(self.buid, *args, **kwds)
 
