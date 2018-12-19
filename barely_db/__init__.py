@@ -41,10 +41,11 @@ class BUIDParser(object):
     }
 
     buid_regex = re.compile(r'([a-zA-Z]{2,3})(\d{2,5})')
-
+    buid_comp_regex = re.compile(r'([a-zA-Z]{2,3})(\d{2,5})-?([a-zA-Z]{1,2}\d{1,5})?')
+    
     ignore_unknown = None
 
-    def __init__(self, ignore_unknown=None, warn_empty=True, mode = 'unique'):
+    def __init__(self, ignore_unknown=None, warn_empty=True, mode = 'unique', allow_components=True):
         ''' Creates a BUID parser. 
         Parameters:
         ignore_unknown = None: Parses unknown BUID types but warns
@@ -63,6 +64,7 @@ class BUIDParser(object):
         self.ignore_unknown = ignore_unknown
         self.warn_empty = warn_empty
         self.mode = mode
+        self.allow_components = allow_components
 
     def __call__(self, buid_str):
         return self.parse(buid_str)
@@ -71,7 +73,10 @@ class BUIDParser(object):
         return self.find(str(buid_str))
 
     def find(self, buid_str):
-        res = self.buid_regex.findall(buid_str)
+        if self.allow_components:
+            res = self.buid_comp_regex.findall(buid_str)
+        else:
+            res = self.buid_regex.findall(buid_str)
 
         if self.ignore_unknown == True:
             res = [r for r in res if self.is_known_buid_type(r)]
@@ -108,38 +113,42 @@ class BUIDParser(object):
     def format_buid_from_regex(self, regex_result):        
         buid_type = regex_result[0].upper()
         buid_id = int(regex_result[1])
-
+        if len(regex_result) >= 3 and regex_result[2]:
+            comp_id = f'-{regex_result[2]}'
+        else:
+            comp_id = ''
+            
         if self.ignore_unknown is None:
             if buid_type not in self.buid_types.values():
                 module_logger.warn(f'Unknown buid type {buid_type} in {repr(regex_result)}!')
 
-        return '{}{:04d}'.format(buid_type, buid_id)
+        return '{}{:04d}{}'.format(buid_type, buid_id, comp_id)
 
 
 
 
-class BUID(object):
-    ''' Handles unique IDs of the form XXYYYY where XX is a two letter string 
-    and YYYY is a 4 letter number.
-    '''
+# class BUID(object):
+#     ''' Handles unique IDs of the form XXYYYY where XX is a two letter string 
+#     and YYYY is a 4 letter number.
+#     '''
 
-    INVALID = 'XX9999'
+#     INVALID = 'XX9999'
 
-    # instance variables and methods
-    def __init__(self, buid_str, do_normalize=True):
-        if do_normalize:
-            self.buid = BUIDParser()(buid_str)
-        else:
-            self.buid = buid_str
+#     # instance variables and methods
+#     def __init__(self, buid_str, do_normalize=True):
+#         if do_normalize:
+#             self.buid = BUIDParser()(buid_str)
+#         else:
+#             self.buid = buid_str
 
-    def __repr__(self):
-        return f'{self.__class__.__qualname__}(\'{self.buid}\')'
+#     def __repr__(self):
+#         return f'{self.__class__.__qualname__}(\'{self.buid}\')'
 
-    def __str__(self):
-        if self.buid is None:
-            return BUID.INVALID
-        else:
-            return self.buid
+#     def __str__(self):
+#         if self.buid is None:
+#             return BUID.INVALID
+#         else:
+#             return self.buid
 
 
 
@@ -154,11 +163,27 @@ def test_BUID():
         buid = buid_p.parse(s)
         print(f'{s} --> {buid}')
 
+    print(f'Normal BUID parsing:')
     _test_normalization('XasfwX_sl293_sl293__Y')
     _test_normalization('XasfwX_sl293_sl333__Y')
     _test_normalization('lorem ipsum')
     _test_normalization('SL000293')
+    _test_normalization('WB0251')
+    _test_normalization('WB0252-D2')
+    _test_normalization('WB0252-AFD2')
+    _test_normalization('WB0252-AFD21231451')  
 
+
+    buid_p2 = BUIDParser(ignore_unknown=True, mode = 'unique', allow_components = False)
+
+    def _test_normalization(s):
+        buid = buid_p2.parse(s)
+        print(f'{s} --> {buid}')
+                  
+    print(f'No components:')
+    _test_normalization('WB0252-D2')
+    _test_normalization('WB0252')
+                  
     def _test_parser_mode(buid_p):
         s = 'XasfwX_sl293_sl333_dp241_sl333_dp241_Y'
         buid = buid_p(s)
@@ -286,7 +311,11 @@ class BarelyDB(object):
         
         candidates = iter_subdir(self.base_path, depth=self.path_depth)
 
-        buid_p = BUIDParser(ignore_unknown=True, mode = 'first', warn_empty = False)
+            buid_p = BUIDParser(ignore_unknown=True, 
+                                mode = 'first', 
+                                warn_empty = False, 
+                                allow_components=False)
+            
         candidates_buid = [(buid_p(c), c) for c in candidates]
         self.entity_paths = {buid: path for buid, path in candidates_buid if buid is not None}
         self.logger.info(f'Entities found: {len(self.entity_paths)}')
