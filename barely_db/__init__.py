@@ -42,6 +42,7 @@ class BUIDParser(object):
 
     buid_regex = re.compile(r'([a-zA-Z]{2,3})(\d{2,5})')
     buid_comp_regex = re.compile(r'([a-zA-Z]{2,3})(\d{2,5})-?([a-zA-Z]{1,2}\d{1,5})?')
+    buid_comp_must_regex = re.compile(r'([a-zA-Z]{2,3})(\d{2,5})-([a-zA-Z]{1,2}\d{1,5})')
     
     ignore_unknown = None
 
@@ -69,15 +70,47 @@ class BUIDParser(object):
     def __call__(self, buid_str):
         return self.parse(buid_str)
 
-    def parse(self, buid_str):
-        return self.find(str(buid_str))
-
-    def find(self, buid_str):
-        if self.allow_components:
-            res = self.buid_comp_regex.findall(buid_str)
+    def parse(self, buid_str):        
+        regex = self.buid_comp_regex if self.allow_components else self.buid_regex
+        regex_result = self.find(str(buid_str), regex)
+        
+        if regex_result is None:
+            return None
+        
+        if self.mode in ['first', 'last', 'unique']:
+            result = self.format_buid_from_regex(regex_result)
         else:
-            res = self.buid_regex.findall(buid_str)
+            result = [self.format_buid_from_regex(r) for r in regex_result]
+            
+        return result
 
+#     def parse_component(self, buid_str):
+#         regex_result = self.find(str(buid_str), self.buid_comp_regex)
+#         if self.allow_components:
+#             res = self.buid_comp_regex.findall(buid_str)
+#         else:
+#             res = self.buid_regex.findall(buid_str)
+        
+#         return     
+
+    def parse_component(self, buid_str):        
+        regex = self.buid_comp_must_regex
+        regex_result = self.find(str(buid_str), regex)
+        
+        if regex_result is None:
+            return None
+        
+        if self.mode in ['first', 'last', 'unique']:
+            result = self.format_component_from_regex(regex_result)
+        else:
+            result = [self.format_component_from_regex(r) for r in regex_result]
+            
+        return result
+
+    def find(self, buid_str, regex):
+    
+        res = regex.findall(buid_str)
+            
         if self.ignore_unknown == True:
             res = [r for r in res if self.is_known_buid_type(r)]
         
@@ -87,7 +120,7 @@ class BUIDParser(object):
         if self.mode in ['last']:
             res.reverse()
     
-        res = [self.format_buid_from_regex(r) for r in res]
+#         res = [self.format_buid_from_regex(r) for r in res]
 
         if len(res) == 0:
             if self.mode in ['first', 'last', 'unique']:
@@ -97,7 +130,8 @@ class BUIDParser(object):
 
         elif len(res) > 1:
             if self.mode in ['unique']:
-                module_logger.warn(f'More than one valid buid found in {buid_str} ({repr(res)}!')
+                res_formated = [self.format_buid_from_regex(r) for r in res]
+                module_logger.warn(f'More than one valid buid found in {buid_str} ({res_formated}!')
                 return None
 
         if self.mode in ['first', 'last', 'unique']:
@@ -105,12 +139,11 @@ class BUIDParser(object):
         else:
             return res
 
-
     def is_known_buid_type(self, regex_result):
         buid_type = regex_result[0].upper()
         return buid_type in self.buid_types.values()
 
-    def format_buid_from_regex(self, regex_result):        
+    def format_buid_from_regex(self, regex_result,):        
         buid_type = regex_result[0].upper()
         buid_id = int(regex_result[1])
         if len(regex_result) >= 3 and regex_result[2]:
@@ -124,7 +157,17 @@ class BUIDParser(object):
 
         return '{}{:04d}{}'.format(buid_type, buid_id, comp_id)
 
+    def format_component_from_regex(self, regex_result, ):        
+        if len(regex_result) >= 3 and regex_result[2]:
+            comp_id = f'{regex_result[2]}'
+        else:
+            comp_id = ''
+            module_logger.warn(f'No buid component found when requested!')
+            
+        return f'{comp_id}'
 
+
+    
 
 
 # class BUID(object):
@@ -172,7 +215,15 @@ def test_BUID():
     _test_normalization('WB0252-D2')
     _test_normalization('WB0252-AFD2')
     _test_normalization('WB0252-AFD21231451')  
-
+                  
+    def _test_components(s):
+        buid = buid_p.parse_component(s)
+        print(f'{s} --> {buid}')
+                  
+    print(f'Only components:')
+    _test_components('WB0252-D2')
+    _test_components('CL0152-N50')
+    _test_components('WB0252')
 
     buid_p2 = BUIDParser(ignore_unknown=True, mode = 'unique', allow_components = False)
 
@@ -183,7 +234,7 @@ def test_BUID():
     print(f'No components:')
     _test_normalization('WB0252-D2')
     _test_normalization('WB0252')
-                  
+              
     def _test_parser_mode(buid_p):
         s = 'XasfwX_sl293_sl333_dp241_sl333_dp241_Y'
         buid = buid_p(s)
@@ -503,12 +554,22 @@ class BarelyDB(object):
 class BarelyDBEntity(object):
     file_manager = None
     
-    def __init__(self, buid, parent_bdb):
-        self._buid = parent_bdb.buid_normalizer(buid)
+    def __init__(self, buid, parent_bdb):       
+        buid_p = BUIDParser(ignore_unknown=False, 
+                    mode = 'first', 
+                    warn_empty = True, 
+                    allow_components=False)            
+        
+        self._buid = buid_p(buid)
         self._bdb = parent_bdb
+        self.component = buid_p.parse_component(buid)
+        
 
     def __repr__(self):
-        return f'{self.__class__.__qualname__}(\'{self.buid}\')'
+        if self.component is None:
+            return f'{self.__class__.__qualname__}(\'{self.buid}\')'
+        else:
+            return f'{self.__class__.__qualname__}(\'{self.buid}-{self.component}\')'
     
     @property
     def buid(self):
