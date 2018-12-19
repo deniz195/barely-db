@@ -311,10 +311,10 @@ class BarelyDB(object):
         
         candidates = iter_subdir(self.base_path, depth=self.path_depth)
 
-            buid_p = BUIDParser(ignore_unknown=True, 
-                                mode = 'first', 
-                                warn_empty = False, 
-                                allow_components=False)
+        buid_p = BUIDParser(ignore_unknown=True, 
+                            mode = 'first', 
+                            warn_empty = False, 
+                            allow_components=False)
             
         candidates_buid = [(buid_p(c), c) for c in candidates]
         self.entity_paths = {buid: path for buid, path in candidates_buid if buid is not None}
