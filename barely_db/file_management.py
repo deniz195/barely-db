@@ -237,3 +237,37 @@ class FileNameAnalyzer(object):
         self.add_regex('(\dp\dV)', 'volt_nom_raw', numeric=False, required=False)
         self.add_regex('(\d{2,4})_MB', 'step_number_mb', numeric=False, required=False)
 
+
+        
+        
+        
+from ipywidgets import widgets
+def copy_files_with_jupyter_button(fns, target_path, dry_run=False, show_button=True):
+    def copy_files(button):
+        import shutil
+
+        progress = widgets.IntProgress(min=0, max=len(fns), value=0, description='Copying...')
+        display(progress)
+        
+        for fn in fns:
+            t_fn = target_path.joinpath(Path(fn).name) 
+            if dry_run:
+                # print(f'shutil.copyfile({fn}, {t_fn})')    
+                pass
+            else:
+                shutil.copyfile(fn, t_fn)    
+            progress.value += 1
+        
+        progress.description = 'Done!'
+
+    
+    button = widgets.Button(description = f'Copy files ({len(fns)}) to {target_path}',
+                           layout=widgets.Layout(width='90%')
+                           )
+    button.on_click(copy_files)
+    
+    if show_button:
+        display(button)
+    else:
+        copy_files(button)
+                
