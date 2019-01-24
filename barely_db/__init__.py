@@ -341,8 +341,26 @@ class BarelyDB(object):
                                     allow_components=False)        
 
         
-    def get_code_paths(self, depth=1, add_to_sys_path=False):              
-        code_path = self.base_path.joinpath('__code')
+    def get_code_paths(self, depth=1, add_to_sys_path=False, relative_bdb_path=True):              
+        
+        code_path_valid = False
+    
+        if relative_bdb_path:
+            code_path = ''
+            # pp = Path(__file__)
+            for p in Path(__file__).parts:
+                code_path = Path(code_path).joinpath(p)
+                if p.find('__code') >= 0:
+                    code_path_valid = True
+                    break
+            
+            if not code_path_valid:
+                self.logger.warning('No code path found, relative to bdb code path! Using default code in base_path!')
+                
+                    
+
+        if not code_path_valid:
+            code_path = self.base_path.joinpath('__code')
 
         # sys.path.append(str(bdb_code_path))
         paths = [code_path]
