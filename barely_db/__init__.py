@@ -661,6 +661,9 @@ class BarelyDBEntity(object):
 
     def resolve_relative_path(self, path, component = None):
         if component is None:
+            component = self.component
+            
+        if component is None:
             base_bath = self.get_entity_path()
         else:
             base_bath = self.get_component_path(component)
