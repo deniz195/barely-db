@@ -347,15 +347,14 @@ class BarelyDB(object):
     
         if relative_bdb_path:
             code_path = ''
-            # pp = Path(__file__)
-            for p in Path(__file__).parts:
+            for p in Path(__file__).absolute().parts:
                 code_path = Path(code_path).joinpath(p)
                 if p.find('__code') >= 0:
                     code_path_valid = True
                     break
             
             if not code_path_valid:
-                self.logger.warning('No code path found, relative to bdb code path! Using default code in base_path!')
+                self.logger.warning(f'No code path found, relative to bdb code path {code_path}! Using default code in base_path!')
                 
                     
 
