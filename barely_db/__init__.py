@@ -8,6 +8,7 @@ import sys
 import os
 
 import json
+import yaml
 import re
 from pathlib import Path
 
@@ -642,6 +643,10 @@ class BarelyDB(object):
         return result
 
 
+
+
+
+
 class BarelyDBEntity(object):
     file_manager = None
     
@@ -652,10 +657,15 @@ class BarelyDBEntity(object):
                     mode = 'first', 
                     warn_empty = True, 
                     allow_components=False)            
-        
         self._buid = buid_p(buid)
         self._bdb = parent_bdb
-        self.component = buid_p.parse_component(buid)
+
+        buid_comp_p = BUIDParser(ignore_unknown=False, 
+                    mode = 'first', 
+                    warn_empty = False, 
+                    allow_components=False)                
+
+        self.component = buid_comp_p.parse_component(buid)
         
 
     def __repr__(self):
@@ -670,7 +680,7 @@ class BarelyDBEntity(object):
 
     @property
     def buid_with_component(self):
-        return self._buid + f'-{self.component}' if self.component is not None else ''
+        return self._buid + (f'-{self.component}' if self.component is not None else '')
     
     @property
     def bdb(self):
