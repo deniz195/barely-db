@@ -1,5 +1,9 @@
 import logging
 
+import typing
+import attr
+import cattr
+
 import datetime
 import numpy as np
 import pandas as pd
@@ -170,7 +174,13 @@ class BUIDParser(object):
         return f'{comp_id}'
 
 
-    
+    def attrib(self, *args, **kwds):
+        ''' Creates an attr attribute that parses buids, based on the
+        the given parser.'''
+        kwds['converter'] = (lambda x: kwds['converter'](self(x))) if 'converter' in kwds else self
+        kwds['validator'] = lambda obj, attr, value: self(value) is not None
+
+        return attr.ib(**kwds)
 
 
 # class BUID(object):
@@ -445,6 +455,10 @@ class BarelyDB(object):
             path = path.resolve().absolute()
         return path
     
+    def get_entity_name(self, buid):
+        path = self.get_entity_path(buid, absolute=True)
+        return Path(path).parts[-1]
+
     def get_component_paths(self, buid, absolute=False):
         buid = self.buid_normalizer(buid)
         if buid not in self.component_paths:
@@ -686,6 +700,9 @@ class BarelyDBEntity(object):
     def bdb(self):
         return self._bdb
 
+    def get_parent_entity(self):
+        return BarelyDBEntity(self.buid, self.bdb)
+
     def resolve_relative_path(self, path, component = None):
         if component is None:
             component = self.component
@@ -790,6 +807,10 @@ class BarelyDBEntity(object):
     def get_entity_path(self, absolute=False):
         return self.bdb.get_entity_path(self.buid, absolute=absolute)      
 
+    def get_entity_name(self):
+        return self.bdb.get_entity_name(self.buid)      
+
+    ### Deprecated! Replaced by get_entity_files
     def entity_files(self, *args, **kwds):
         return self.bdb.entity_files(self.buid, *args, **kwds)
 
