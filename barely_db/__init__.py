@@ -21,7 +21,7 @@ from collections.abc import Sequence, Container
 
 import objectpath # http://objectpath.org/reference.html
 
-from .file_management import FileManager, FileNameAnalyzer
+from .file_management import FileManager, FileNameAnalyzer, serialize_to_file
 
 # create logger
 module_logger = logging.getLogger(__name__)
@@ -657,6 +657,8 @@ class BarelyDB(object):
         return result
 
 
+    def get_entity(self, buid):
+        return BarelyDBEntity(buid, self)
 
 
 

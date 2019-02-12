@@ -4,12 +4,18 @@ import os
 import cProfile
 import logging
 
+import attr
+import cattr
+import typing
+
 import pandas as pd
 import numpy as np
 import json
 import re
 import zipfile
 from pathlib import Path
+import shutil
+import filecmp
 
 from enum import Enum, IntEnum
 
@@ -271,3 +277,171 @@ def copy_files_with_jupyter_button(fns, target_path, dry_run=False, show_button=
     else:
         copy_files(button)
                 
+
+
+@attr.s(frozen=True,kw_only=True)
+class RevisionFile(object):
+
+    base_name = attr.ib()
+    revision = attr.ib(default=None)
+    full_name = attr.ib(default=None)
+
+    def __attrs_post_init__(self):
+        if self.revision is None:
+            object.__setattr__(self, "full_name", f'{self.base_name}')
+        else:
+            object.__setattr__(self, "full_name", f'{self.base_name}.{self.revision:d}')
+
+    def exists(self):
+        return Path(self.full_name).exists()
+
+    def get_next_revision_file(self):
+        current_revision = 0 if self.revision is None else self.revision
+        return RevisionFile(base_name=self.base_name,
+                            revision=current_revision+1,
+                            )
+
+    def get_new_revision(self):
+        if not self.exists():
+            return self
+
+        if self.revision is None:
+            rf = RevisionFile(base_name=self.base_name,
+                              revision=0)
+        else:
+            rf = self
+
+        while rf.exists():
+            # pray to god that this converges ;)
+            rf = rf.get_next_revision_file()
+
+        return rf
+
+    def create_new_revision(self):
+        if self.exists():
+            new_rev = self.get_new_revision()
+            shutil.move(self.base_name, new_rev.full_name)
+            module_logger.info(f'Created new revision ({new_rev.revision}) of file {self.base_name}!')
+
+    def get_last_revision(self):
+        last_rev = None
+        rf = RevisionFile(base_name=self.base_name, revision=0)
+
+        while rf.exists():
+            # pray to god that this converges ;)
+            last_rev = rf
+            rf = rf.get_next_revision_file()
+
+        return last_rev
+
+    def reduce_last_revision(self):
+        if not RevisionFile(base_name=self.base_name).exists():
+            return None
+        
+        last_rev = self.get_last_revision()
+
+        if last_rev is not None:
+            if filecmp.cmp(self.base_name, last_rev.full_name, shallow=False):
+                os.unlink(last_rev.full_name)
+                module_logger.info(f'Last revision of {self.base_name} matches current version and is removed!')
+
+
+
+
+def serialize_to_file(base_file_identifier=None, 
+                      prepend_buid=False, 
+                      prefix='', suffix='',
+                      serialize_method = 'serialize',
+                      deserialize_classmethod = 'deserialize',
+                      ):
+    ''' Decorator for attrs based classes to serialize them to a file.
+    Serialization is performed by class methods .serialize() and .deserialize().
+    '''
+
+    def decorate_class(cls):
+        def get_serialization_filename(entity, file_identifier=None):
+            if file_identifier is None:
+                file_identifier = base_file_identifier
+
+            if file_identifier is None:
+                raise ValueError('No file_identifier given. Either set base_file_identifier in serialize_to_file'
+                                 ', or provide file_identifier to this function call.')
+
+            export_prefix = f'{entity.buid_with_component}_' if prepend_buid else ''
+            export_prefix += prefix
+
+            fm = entity.make_file_manager(export_prefix=export_prefix)
+
+            filename = fm.make_export_file_name(file_identifier)
+
+            if suffix:
+                filename += suffix
+
+            return filename
+
+        def save_to_file(self, filename, override=False, revision=True):
+            if serialize_method is None:
+                module_logger.error(f'Object from class {self.__class__.__qualname__} cannot be deserialized!')
+                return None
+
+            serialize = getattr(self, serialize_method)
+            serial_data = serialize() 
+
+            if revision:
+                revision_file = RevisionFile(base_name=filename)
+                revision_file.create_new_revision()
+
+            if Path(filename).exists() and not override:
+                module_logger.warning('File already exists. Skip. (consider override=True).')
+            else:
+                with open(filename, 'wb') as f:
+                    f.write(serial_data.encode())
+                    module_logger.info(f'Config written to {filename}')
+
+                if revision:
+                    revision_file.reduce_last_revision()
+        
+        def save_to_entity(self, entity, file_identifier=None, override=False, revision=True):
+            filename = cls.get_serialization_filename(entity, file_identifier=file_identifier)
+            self.save_to_file(filename, override=override, revision=revision)            
+            return filename
+
+        def load_from_file(filename, default=None):
+            if deserialize_classmethod is None:
+                module_logger.error(f'Class {cls.__qualname__} cannot be deserialized!')
+                return None
+
+            deserialize = getattr(cls, deserialize_classmethod)
+            
+            try:
+                with open(filename, 'r') as f:
+                    return deserialize(f.read())
+            except FileNotFoundError:
+                if default is None:
+                    raise
+                else:
+                    module_logger.info(f'Using default, because file not found ({filename}).')
+                    return default
+
+        def load_from_entity(entity, file_identifier=None, allow_parent=False, force_parent=False, default=None):
+            if force_parent:
+                entity = entity.get_parent_entity()
+
+            filename = cls.get_serialization_filename(entity, file_identifier=file_identifier)
+
+            if not Path(filename).exists() and allow_parent:
+                filename = cls.get_serialization_filename(entity.get_parent_entity(), 
+                                                          file_identifier=file_identifier)
+
+            return cls.load_from_file(filename, default=default)
+
+        cls.get_serialization_filename = get_serialization_filename
+        cls.save_to_file = save_to_file
+        cls.save_to_entity = save_to_entity
+        cls.load_from_file = load_from_file
+        cls.load_from_entity = load_from_entity
+
+        return cls
+       
+
+    return decorate_class
