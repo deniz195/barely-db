@@ -324,17 +324,22 @@ SourcedItem = namedtuple('SourcedItem', 'name, value, property_file, source')
 
 class BarelyDB(object):
 
+    default_base_path = 'G:\\My Drive\\Battrion_AG\\DATABASE'
     base_path = None
     property_file_glob = '*.property.json'
     preferred_property_files = []
     ignored_files = ['desktop.ini']
 
-    def __init__(self, base_path, path_depth=0):
+    def __init__(self, base_path=None, path_depth=0):
+        self.logger = module_logger
+
         self.path_depth = path_depth
+        if base_path is None:
+            base_path = self.default_base_path
+            self.logger.info(f'Using default path {base_path}')
+
         self.base_path = Path(base_path)
         self.base_path = self.base_path.resolve().absolute()
-
-        self.logger = module_logger
 
         self.entity_paths = {}
         self.entity_properties = {}
