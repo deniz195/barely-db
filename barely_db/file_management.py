@@ -353,10 +353,13 @@ def serialize_to_file(base_file_identifier=None,
                       prefix='', suffix='',
                       serialize_method = 'serialize',
                       deserialize_classmethod = 'deserialize',
+                      allow_parent=False,
                       ):
     ''' Decorator for attrs based classes to serialize them to a file.
     Serialization is performed by class methods .serialize() and .deserialize().
     '''
+
+    default_allow_parent = allow_parent
 
     def decorate_class(cls):
         def get_serialization_filename(entity, file_identifier=None):
@@ -423,7 +426,10 @@ def serialize_to_file(base_file_identifier=None,
                     module_logger.info(f'Using default, because file not found ({filename}).')
                     return default
 
-        def load_from_entity(entity, file_identifier=None, allow_parent=False, force_parent=False, default=None):
+        def load_from_entity(entity, file_identifier=None, allow_parent=None, force_parent=False, default=None):
+            if allow_parent is None:
+                allow_parent = default_allow_parent
+
             if force_parent:
                 entity = entity.get_parent_entity()
 
