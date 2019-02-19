@@ -10,6 +10,7 @@ import pandas as pd
 import pint
 import sys
 import os
+import copy
 
 import json
 import yaml
@@ -21,7 +22,7 @@ from collections.abc import Sequence, Container
 
 import objectpath # http://objectpath.org/reference.html
 
-from .file_management import FileManager, FileNameAnalyzer, serialize_to_file
+from .file_management import FileManager, FileNameAnalyzer, serialize_to_file, open_in_explorer
 
 # create logger
 module_logger = logging.getLogger(__name__)
@@ -471,7 +472,7 @@ class BarelyDB(object):
                        
         paths = self.component_paths[buid]
         if absolute:
-            paths = [path.resolve().absolute() for path in paths]
+            paths = {comp: Path(path).resolve().absolute() for comp, path in paths.items()}
         return paths
 
     def get_component_path(self, buid, component, absolute=False):
@@ -814,6 +815,12 @@ class BarelyDBEntity(object):
     def get_entity_path(self, absolute=False):
         return self.bdb.get_entity_path(self.buid, absolute=absolute)      
 
+    def open_entity_path(self):
+        if self.component is None:
+            open_in_explorer(self.get_entity_path(absolute=True))
+        else:
+            open_in_explorer(self.get_component_path(absolute=True))
+
     def get_entity_name(self):
         return self.bdb.get_entity_name(self.buid)      
 
@@ -874,5 +881,22 @@ class BarelyDBEntity(object):
         return self.bdb.query_properties(self.buid, *args, **kwds)
     
 
-    
-    
+
+    def load_object(self, object_class, default=None):
+        try:
+            obj = object_class.load_from_entity(self)
+        except (FileNotFoundError, KeyError):
+            self.logger.warning(f'No {object_class.__qualname__} object found for {self.buid_with_component}!')
+            obj = None
+
+        if obj is None and default is not None:
+            self.logger.warning(f'Using default object!')
+            obj = copy.copy(default)
+            
+        return obj
+
+
+    def save_object(self, obj, **kwds):
+        filename = obj.save_to_entity(self, **kwds)
+
+        return filename

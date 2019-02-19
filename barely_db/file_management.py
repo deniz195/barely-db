@@ -3,6 +3,7 @@
 import os
 import cProfile
 import logging
+import subprocess
 
 import attr
 import cattr
@@ -35,6 +36,16 @@ def _reload_module():
     importlib.reload(current_module)
 
     
+
+def open_in_explorer(path):
+    p = Path(path)
+    if p.is_dir():
+        module_logger.info(f'Opening explorer for folder {path}')
+        subprocess.Popen(rf'explorer {path}')
+    else:
+        module_logger.info(f'Opening explorer for file {path}')
+        subprocess.Popen(rf'explorer /select, {path}')
+
     
     
     
@@ -362,6 +373,12 @@ def serialize_to_file(base_file_identifier=None,
     default_allow_parent = allow_parent
 
     def decorate_class(cls):
+
+        def _open_in_explorer(self, entity, file_identifier=None):
+            global open_in_explorer
+            filename = cls.get_serialization_filename(entity, file_identifier=file_identifier)
+            open_in_explorer(filename)            
+
         def get_serialization_filename(entity, file_identifier=None):
             if file_identifier is None:
                 file_identifier = base_file_identifier
@@ -404,9 +421,11 @@ def serialize_to_file(base_file_identifier=None,
                 if revision:
                     revision_file.reduce_last_revision()
         
-        def save_to_entity(self, entity, file_identifier=None, override=False, revision=True):
+        def save_to_entity(self, entity, file_identifier=None, override=False, revision=True, open_in_explorer=False):
             filename = cls.get_serialization_filename(entity, file_identifier=file_identifier)
             self.save_to_file(filename, override=override, revision=revision)            
+            if open_in_explorer:
+                self.open_in_explorer(entity)
             return filename
 
         def load_from_file(filename, default=None):
@@ -446,6 +465,7 @@ def serialize_to_file(base_file_identifier=None,
         cls.save_to_entity = save_to_entity
         cls.load_from_file = load_from_file
         cls.load_from_entity = load_from_entity
+        cls.open_in_explorer = _open_in_explorer
 
         return cls
        
