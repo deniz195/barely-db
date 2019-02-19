@@ -436,8 +436,8 @@ def serialize_to_file(base_file_identifier=None,
             deserialize = getattr(cls, deserialize_classmethod)
             
             try:
-                with open(filename, 'r') as f:
-                    return deserialize(f.read())
+                with open(filename, 'rb') as f:
+                    return deserialize(f.read().decode())
             except FileNotFoundError:
                 if default is None:
                     raise
