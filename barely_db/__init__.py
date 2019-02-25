@@ -7,7 +7,6 @@ import cattr
 import datetime
 import numpy as np
 import pandas as pd
-import pint
 import sys
 import os
 import copy
@@ -387,7 +386,7 @@ class BarelyDB(object):
         paths = [str(p) for p in paths]
         if add_to_sys_path:
             for p in paths:
-                sys.path.append(p)
+                sys.path.insert(0, p)
                 
         return paths
         
