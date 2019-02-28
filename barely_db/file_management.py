@@ -37,11 +37,14 @@ def _reload_module():
 
     
 
-def open_in_explorer(path):
+def open_in_explorer(path, start=False):
     p = Path(path)
     if p.is_dir():
         module_logger.info(f'Opening explorer for folder {path}')
         subprocess.Popen(rf'explorer {path}')
+    elif start:
+        module_logger.info(f'Opening file {path}')
+        subprocess.Popen(rf'explorer /start, {path}')
     else:
         module_logger.info(f'Opening explorer for file {path}')
         subprocess.Popen(rf'explorer /select, {path}')
@@ -437,13 +440,20 @@ def serialize_to_file(base_file_identifier=None,
             
             try:
                 with open(filename, 'rb') as f:
-                    return deserialize(f.read().decode())
+                    file_data = f.read().decode()
             except FileNotFoundError:
                 if default is None:
                     raise
                 else:
                     module_logger.info(f'Using default, because file not found ({filename}).')
                     return default
+
+            try:
+                return deserialize(file_data)
+            except BaseException as e:
+                raise RuntimeError(f'Deserialization failed for file {filename}')
+
+
 
         def load_from_entity(entity, file_identifier=None, allow_parent=None, force_parent=False, default=None):
             if allow_parent is None:

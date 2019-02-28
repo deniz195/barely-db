@@ -209,7 +209,7 @@ class BUIDParser(object):
 
 
 
-def test_BUID():
+def _test_BUID():
     buid_p = BUIDParser(ignore_unknown=True, mode = 'unique')
 
     aa = BUID(buid_p('XasfwX_sl293__Y'))
