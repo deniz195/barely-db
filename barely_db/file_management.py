@@ -368,6 +368,7 @@ def serialize_to_file(base_file_identifier=None,
                       serialize_method = 'serialize',
                       deserialize_classmethod = 'deserialize',
                       allow_parent=False,
+                      binary=False,
                       ):
     ''' Decorator for attrs based classes to serialize them to a file.
     Serialization is performed by class methods .serialize() and .deserialize().
@@ -417,8 +418,10 @@ def serialize_to_file(base_file_identifier=None,
             if Path(filename).exists() and not override:
                 module_logger.warning('File already exists. Skip. (consider override=True).')
             else:
+                serial_data_binary = serial_data if binary else serial_data.encode()                    
+
                 with open(filename, 'wb') as f:
-                    f.write(serial_data.encode())
+                    f.write(serial_data_binary)
                     module_logger.info(f'Config written to {filename}')
 
                 if revision:
@@ -440,7 +443,9 @@ def serialize_to_file(base_file_identifier=None,
             
             try:
                 with open(filename, 'rb') as f:
-                    file_data = f.read().decode()
+                    file_data_binary = f.read()
+                    file_data = file_data_binary if binary else file_data_binary.decode()
+
             except FileNotFoundError:
                 if default is None:
                     raise
