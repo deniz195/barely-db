@@ -672,6 +672,11 @@ class BarelyDB(object):
 class BarelyDBEntity(object):
     file_manager = None
     
+    @classmethod
+    def like(cls, entity):
+        ''' Copy constructor for subclasses '''
+        return cls(buid=entity.buid_with_component, parent_bdb=entity.bdb)
+
     def __init__(self, buid, parent_bdb):       
         self.logger = module_logger
         
