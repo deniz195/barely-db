@@ -21,7 +21,10 @@ from collections.abc import Sequence, Container
 
 import objectpath # http://objectpath.org/reference.html
 
-from .file_management import FileManager, FileNameAnalyzer, serialize_to_file, open_in_explorer
+# from .file_management import FileManager, FileNameAnalyzer, serialize_to_file, open_in_explorer
+from .file_management import *
+
+__all__ = ['BUIDParser', 'BarelyDB', 'BarelyDBEntity', 'FileManager', 'FileNameAnalyzer', 'serialize_to_file', 'open_in_explorer']
 
 # create logger
 module_logger = logging.getLogger(__name__)
@@ -325,7 +328,14 @@ SourcedItem = namedtuple('SourcedItem', 'name, value, property_file, source')
 
 class BarelyDB(object):
 
-    default_base_path = 'G:\\My Drive\\Battrion_AG\\DATABASE'
+    # default_base_path = 'G:\\My Drive\\Battrion_AG\\DATABASE'
+    default_base_path = 'G:\\Team Drives\\Database'
+
+    known_bases = [\
+        'G:\\My Drive\\Battrion_AG\\DATABASE\\',
+        'G:\\Team Drives\\Database\\',
+        'barelydb://']
+
     base_path = None
     property_file_glob = '*.property.json'
     preferred_property_files = []
@@ -357,6 +367,18 @@ class BarelyDB(object):
                                     warn_empty = False, 
                                     allow_components=False)        
 
+
+        self.known_bases_re = [re.compile(re.escape(b), re.IGNORECASE) for b in self.known_bases]
+
+
+    def resolve_file(self, filename):
+        base_path_str = f'{str(self.base_path)}{os.sep}'
+        base_path_str = base_path_str.replace('\\', '\\\\')
+
+        for b_re in self.known_bases_re:
+            filename = b_re.sub(base_path_str, filename)
+
+        return filename
         
     def get_code_paths(self, depth=1, add_to_sys_path=False, relative_bdb_path=True):              
         
@@ -665,6 +687,7 @@ class BarelyDB(object):
 
     def get_entity(self, buid):
         return BarelyDBEntity(buid, self)
+
 
 
 

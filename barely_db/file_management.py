@@ -20,6 +20,8 @@ import filecmp
 
 from enum import Enum, IntEnum
 
+__all__ = ['open_in_explorer', 'FileManager', 'FileNameAnalyzer', 'copy_files_with_jupyter_button', 'serialize_to_file', 'RevisionFile']
+
 # from chunked_object import *
 # from message_dump import *
 
@@ -358,7 +360,6 @@ class RevisionFile(object):
             if filecmp.cmp(self.base_name, last_rev.full_name, shallow=False):
                 os.unlink(last_rev.full_name)
                 module_logger.info(f'Last revision of {self.base_name} matches current version and is removed!')
-
 
 
 
