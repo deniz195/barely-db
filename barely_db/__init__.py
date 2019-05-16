@@ -341,7 +341,7 @@ class BarelyDB(object):
     preferred_property_files = []
     ignored_files = ['desktop.ini']
 
-    def __init__(self, base_path=None, path_depth=0):
+    def __init__(self, base_path=None, path_depth=0, auto_reload_components = True):
         self.logger = module_logger
 
         self.path_depth = path_depth
@@ -351,6 +351,8 @@ class BarelyDB(object):
 
         self.base_path = Path(base_path)
         self.base_path = self.base_path.resolve().absolute()
+
+        self.auto_reload_components = auto_reload_components
 
         self.entity_paths = {}
         self.entity_properties = {}
@@ -489,7 +491,7 @@ class BarelyDB(object):
 
     def get_component_paths(self, buid, absolute=False):
         buid = self.buid_normalizer(buid)
-        if buid not in self.component_paths:
+        if self.auto_reload_components or (buid not in self.component_paths):
             self.load_components(buid)
                        
         paths = self.component_paths[buid]
