@@ -468,9 +468,14 @@ def serialize_to_file(base_file_identifier=None,
             if force_parent:
                 entity = entity.get_parent_entity()
 
-            filename = cls.get_serialization_filename(entity, file_identifier=file_identifier)
+            try:
+                filename = cls.get_serialization_filename(entity, file_identifier=file_identifier)
+                load_parent = not Path(filename).exists()
+            except FileNotFoundError:
+                filename = None
+                load_parent = True
 
-            if not Path(filename).exists() and allow_parent:
+            if load_parent and allow_parent:
                 filename = cls.get_serialization_filename(entity.get_parent_entity(), 
                                                           file_identifier=file_identifier)
 
