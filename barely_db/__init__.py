@@ -14,7 +14,7 @@ import copy
 import json
 import yaml
 import re
-from pathlib import Path,PureWindowsPath
+from pathlib import Path, PureWindowsPath
 
 from collections import OrderedDict
 from collections.abc import Sequence, Container
@@ -387,14 +387,14 @@ class BarelyDB(object):
         base_path_str = f'{str(self.base_path)}{os.sep}'
         base_path_str = base_path_str.replace('\\', '\\\\')
         # check if path structure of filename is Windows-like 
-        wind = False
+        is_windows = False
         if "\\" in filename:
-            wind = True
+            is_windows = True
 
         for b_re in self.known_bases_re:
             filename = b_re.sub(base_path_str, filename)
             # if file is windows like and have a unix like filing system 
-            if wind & ('/' in base_path_str):
+            if is_windows and ('/' in base_path_str):
                 filename = filename.replace("\\","/") # replace backslashes to forward slashes 
 
         return filename
