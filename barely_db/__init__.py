@@ -14,7 +14,7 @@ import copy
 import json
 import yaml
 import re
-from pathlib import Path
+from pathlib import Path,PureWindowsPath
 
 from collections import OrderedDict
 from collections.abc import Sequence, Container
@@ -329,7 +329,11 @@ SourcedItem = namedtuple('SourcedItem', 'name, value, property_file, source')
 class BarelyDB(object):
 
     # default_base_path = 'G:\\My Drive\\Battrion_AG\\DATABASE'
-    default_base_path = 'G:\\Team Drives\\Database'
+    # create list of possible default base paths 
+    default_base_path = [\
+        'G:\\Team Drives\\Database',
+        '/Volumes/GoogleDrive/Team Drives/Database',
+        '/Volumes/GoogleDrive/Teamablagen/Database']      
 
     known_bases = [\
         'G:\\My Drive\\Battrion_AG\\DATABASE\\',
@@ -345,9 +349,15 @@ class BarelyDB(object):
         self.logger = module_logger
 
         self.path_depth = path_depth
+        # if base path is None, check default base path for existance and
+        # break at first existing path 
         if base_path is None:
-            base_path = self.default_base_path
-            self.logger.info(f'Using default path {base_path}')
+            for def_base_path in self.default_base_path  :
+                if os.path.exists(def_base_path):
+                    base_path = self.default_base_path
+                    self.logger.info(f'Using default path {base_path}')
+                    break
+ 
 
         self.base_path = Path(base_path)
         self.base_path = self.base_path.resolve().absolute()
@@ -376,9 +386,16 @@ class BarelyDB(object):
     def resolve_file(self, filename):
         base_path_str = f'{str(self.base_path)}{os.sep}'
         base_path_str = base_path_str.replace('\\', '\\\\')
+        # check if path structure of filename is Windows-like 
+        wind = False
+        if "\\" in filename:
+            wind = True
 
         for b_re in self.known_bases_re:
             filename = b_re.sub(base_path_str, filename)
+            # if file is windows like and have a unix like filing system 
+            if wind & ('/' in base_path_str):
+                filename = filename.replace("\\","/") # replace backslashes to forward slashes 
 
         return filename
         
