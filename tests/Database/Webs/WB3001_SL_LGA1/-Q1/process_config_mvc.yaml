@@ -1,0 +1,45 @@
+name: Default anode for energy LIB
+revision: '001'
+machine_config_file: G:\My Drive\Battrion_AG\DATABASE\Webs\WB3009_LG-A1_SL0382_process_dev\machine_config.yaml
+web_speed: !unit 0.8 m / min
+web_tension: !unit 60 N
+web_unwind_break: !unit 400 count
+mass_loading: !unit 16.2 mg / cm ** 2
+wlt_target: !unit 240 um
+entity_web:
+  buid: WB3009
+  name: WB3009_LG-A1_SL0382_process_dev
+coating:
+  method: SWA comma coater
+  die: DIE010
+  bath: BATH008
+  bar: CB003
+wlt_calibration:
+  method: 5-gap
+  delta: !unit 25 um
+  step_time: !unit 4 s
+loading_calibration:
+  method: 1-gap
+  delta: !unit 25 um
+  step_time: !unit 20 s
+slurry_transport:
+  density: !unit 1.35 g / ml
+  viscosity: !unit 4300 mPa * s
+  hose: HOSE011 (Extra large hose 8.0 mm)
+  filter: FILT010 150um
+  stirring_head: SH007
+  stirring_speed: !unit 8 rpm
+  pump_power: !unit 55 percent
+  bath_level: !unit 1.52 V
+  mass_transport: !unit 51.84 g / min
+mp1_settings:
+  active: true
+  distance_foil: !unit 3 mm
+  number_mag_boards: 8
+  beta: 15
+  heater_power: '---, 80-4'
+dryer_settings:
+  active: true
+  heater_power: F1F1 F1F1 F1F1 F1F1 F1F1
+  target_drying_profiles: G:\My Drive\Battrion_AG\DATABASE\Webs\WB3009_LG-A1_SL0382_process_dev\-T2_proc_dev_validation\WB3009-T2_temperature_profiles.yaml
+  target_drying_profiles_plot: 

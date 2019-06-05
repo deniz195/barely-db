@@ -396,6 +396,9 @@ class BarelyDB(object):
             # if file is windows like and have a unix like filing system 
             if is_windows and ('/' in base_path_str):
                 filename = filename.replace("\\","/") # replace backslashes to forward slashes 
+            # check it is the other way around        
+            elif (not is_windows) and ('\\' in base_path_str):
+                filename = filename.replace("/","\\")
 
         return filename
         

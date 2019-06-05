@@ -1,0 +1,299 @@
+buid: WB3001-Q1
+name:
+meas_name: temperature_profile
+temperature_profiles_plot: G:\My Drive\Battrion_AG\DATABASE\Webs\WB3001_SL_LGA1\-Q1\export\WB3001-Q1_webdata_plot_drying_profile.png
+temperature_profiles:
+- region_name: '0'
+  temperatures:
+  - sensor: btrn-temp-sensor-000001
+    T_amb: !unit 59.482 celsius
+    T_amb_std: !unit 0.4281 celsius
+    T_dew: !unit 11.2466 celsius
+    T_dew_std:
+    T_web: !unit 54.1382 celsius
+    T_web_std: !unit 1.24259 celsius
+    dT_web: !unit -5.34375 Δcelsius
+    dT_web_std:
+    RH: !unit 6.866 percent
+    RH_std: !unit 0.127254 percent
+    machine_position: !unit 2.62 m
+  - sensor: btrn-temp-sensor-000002
+    T_amb: !unit 57.375 celsius
+    T_amb_std: !unit 1.0995 celsius
+    T_dew: !unit 3.40181 celsius
+    T_dew_std:
+    T_web: !unit 41.7565 celsius
+    T_web_std: !unit 1.89694 celsius
+    dT_web: !unit -15.6185 Δcelsius
+    dT_web_std:
+    RH: !unit 4.421 percent
+    RH_std: !unit 0.294545 percent
+    machine_position: !unit 3.8 m
+  - sensor: btrn-temp-sensor-000003
+    T_amb: !unit 56.2525 celsius
+    T_amb_std: !unit 0.23724 celsius
+    T_dew: !unit 13.4863 celsius
+    T_dew_std:
+    T_web: !unit 53.2398 celsius
+    T_web_std: !unit 1.74848 celsius
+    dT_web: !unit -3.01275 Δcelsius
+    dT_web_std:
+    RH: !unit 9.2665 percent
+    RH_std: !unit 0.0848699 percent
+    machine_position: !unit 4.98 m
+  - sensor: btrn-temp-sensor-000004
+    T_amb: !unit 52.658 celsius
+    T_amb_std: !unit 0.10139 celsius
+    T_dew: !unit 4.09582 celsius
+    T_dew_std:
+    T_web: !unit 35.585 celsius
+    T_web_std: !unit 0.59058 celsius
+    dT_web: !unit -17.073 Δcelsius
+    dT_web_std:
+    RH: !unit 5.8205 percent
+    RH_std: !unit 0.0605653 percent
+    machine_position: !unit 6.16 m
+  - sensor: btrn-temp-sensor-000005
+    T_amb: !unit 45.9135 celsius
+    T_amb_std: !unit 0.0876161 celsius
+    T_dew: !unit 5.67193 celsius
+    T_dew_std:
+    T_web: !unit 45.3167 celsius
+    T_web_std: !unit 0.697211 celsius
+    dT_web: !unit -0.59675 Δcelsius
+    dT_web_std:
+    RH: !unit 9.099 percent
+    RH_std: !unit 0.0649615 percent
+    machine_position: !unit 7.34 m
+  - sensor: btrn-temp-sensor-000006
+    T_amb: !unit 29.987 celsius
+    T_amb_std: !unit 0.0426861 celsius
+    T_dew: !unit 5.45842 celsius
+    T_dew_std:
+    T_web: !unit 33.708 celsius
+    T_web_std: !unit 0.223615 celsius
+    dT_web: !unit 3.721 Δcelsius
+    dT_web_std:
+    RH: !unit 21.244 percent
+    RH_std: !unit 0.0645144 percent
+    machine_position: !unit 8.33 m
+  - sensor: btrn-temp-sensor-000007
+    T_amb: !unit 29.998 celsius
+    T_amb_std: !unit 0.241587 celsius
+    T_dew: !unit 5.44956 celsius
+    T_dew_std:
+    T_web: !unit 32.484 celsius
+    T_web_std: !unit 0.663443 celsius
+    dT_web: !unit 2.486 Δcelsius
+    dT_web_std:
+    RH: !unit 21.2175 percent
+    RH_std: !unit 0.514535 percent
+    machine_position: !unit 1.65 m
+  - sensor: btrn-temp-sensor-000008
+    T_amb: !unit 44.783 celsius
+    T_amb_std: !unit 1.13014 celsius
+    T_dew: !unit 9.03946 celsius
+    T_dew_std:
+    T_web: !unit 19.765 celsius
+    T_web_std: !unit 4.02437 celsius
+    dT_web: !unit -25.018 Δcelsius
+    dT_web_std:
+    RH: !unit 12.1505 percent
+    RH_std: !unit 0.625152 percent
+    machine_position: !unit 2 m
+- region_name: A
+  temperatures:
+  - sensor: btrn-temp-sensor-000001
+    T_amb: !unit 54.6677 celsius
+    T_amb_std: !unit 0.440559 celsius
+    T_dew: !unit 13.4551 celsius
+    T_dew_std:
+    T_web: !unit 18.2903 celsius
+    T_web_std: !unit 1.85399 celsius
+    dT_web: !unit -36.3774 Δcelsius
+    dT_web_std:
+    RH: !unit 9.9749 percent
+    RH_std: !unit 0.350255 percent
+    machine_position: !unit 2.62 m
+  - sensor: btrn-temp-sensor-000002
+    T_amb: !unit 52.4644 celsius
+    T_amb_std: !unit 0.34122 celsius
+    T_dew: !unit 9.57761 celsius
+    T_dew_std:
+    T_web: !unit 8.92856 celsius
+    T_web_std: !unit 2.48116 celsius
+    dT_web: !unit -43.5359 Δcelsius
+    dT_web_std:
+    RH: !unit 8.57361 percent
+    RH_std: !unit 0.265299 percent
+    machine_position: !unit 3.8 m
+  - sensor: btrn-temp-sensor-000003
+    T_amb: !unit 51.5551 celsius
+    T_amb_std: !unit 0.330562 celsius
+    T_dew: !unit 16.0358 celsius
+    T_dew_std:
+    T_web: !unit 24.9958 celsius
+    T_web_std: !unit 1.6382 celsius
+    dT_web: !unit -26.5592 Δcelsius
+    dT_web_std:
+    RH: !unit 13.7207 percent
+    RH_std: !unit 0.321741 percent
+    machine_position: !unit 4.98 m
+  - sensor: btrn-temp-sensor-000004
+    T_amb: !unit 47.9548 celsius
+    T_amb_std: !unit 0.858741 celsius
+    T_dew: !unit 8.87216 celsius
+    T_dew_std:
+    T_web: !unit 8.32303 celsius
+    T_web_std: !unit 1.49038 celsius
+    dT_web: !unit -39.6318 Δcelsius
+    dT_web_std:
+    RH: !unit 10.2212 percent
+    RH_std: !unit 0.65948 percent
+    machine_position: !unit 6.16 m
+  - sensor: btrn-temp-sensor-000005
+    T_amb: !unit 42.3864 celsius
+    T_amb_std: !unit 0.649795 celsius
+    T_dew: !unit 8.92678 celsius
+    T_dew_std:
+    T_web: !unit 22.5793 celsius
+    T_web_std: !unit 1.03282 celsius
+    dT_web: !unit -19.8071 Δcelsius
+    dT_web_std:
+    RH: !unit 13.6572 percent
+    RH_std: !unit 0.480557 percent
+    machine_position: !unit 7.34 m
+  - sensor: btrn-temp-sensor-000006
+    T_amb: !unit 31.4609 celsius
+    T_amb_std: !unit 0.165483 celsius
+    T_dew: !unit 6.63614 celsius
+    T_dew_std:
+    T_web: !unit 42.6581 celsius
+    T_web_std: !unit 0.579922 celsius
+    dT_web: !unit 11.1972 Δcelsius
+    dT_web_std:
+    RH: !unit 21.191 percent
+    RH_std: !unit 0.522569 percent
+    machine_position: !unit 8.33 m
+  - sensor: btrn-temp-sensor-000007
+    T_amb: !unit 28.9253 celsius
+    T_amb_std: !unit 0.243961 celsius
+    T_dew: !unit 7.39645 celsius
+    T_dew_std:
+    T_web: !unit 26.8556 celsius
+    T_web_std: !unit 0.799185 celsius
+    dT_web: !unit -2.06967 Δcelsius
+    dT_web_std:
+    RH: !unit 25.8231 percent
+    RH_std: !unit 0.817755 percent
+    machine_position: !unit 1.65 m
+  - sensor: btrn-temp-sensor-000008
+    T_amb: !unit 39.4595 celsius
+    T_amb_std: !unit 1.02075 celsius
+    T_dew: !unit 14.0919 celsius
+    T_dew_std:
+    T_web: !unit 20.3413 celsius
+    T_web_std: !unit 2.59472 celsius
+    dT_web: !unit -19.1182 Δcelsius
+    dT_web_std:
+    RH: !unit 22.4898 percent
+    RH_std: !unit 1.12557 percent
+    machine_position: !unit 2 m
+- region_name: B
+  temperatures:
+  - sensor: btrn-temp-sensor-000001
+    T_amb: !unit 54.8737 celsius
+    T_amb_std: !unit 0.213959 celsius
+    T_dew: !unit 13.6472 celsius
+    T_dew_std:
+    T_web: !unit 20.4725 celsius
+    T_web_std: !unit 6.0067 celsius
+    dT_web: !unit -34.4011 Δcelsius
+    dT_web_std:
+    RH: !unit 10.0019 percent
+    RH_std: !unit 0.194554 percent
+    machine_position: !unit 2.62 m
+  - sensor: btrn-temp-sensor-000002
+    T_amb: !unit 51.8558 celsius
+    T_amb_std: !unit 0.268758 celsius
+    T_dew: !unit 9.6466 celsius
+    T_dew_std:
+    T_web: !unit 11.5919 celsius
+    T_web_std: !unit 4.1171 celsius
+    dT_web: !unit -40.2639 Δcelsius
+    dT_web_std:
+    RH: !unit 8.87379 percent
+    RH_std: !unit 0.235919 percent
+    machine_position: !unit 3.8 m
+  - sensor: btrn-temp-sensor-000003
+    T_amb: !unit 52.1279 celsius
+    T_amb_std: !unit 0.216997 celsius
+    T_dew: !unit 16.2097 celsius
+    T_dew_std:
+    T_web: !unit 26.9363 celsius
+    T_web_std: !unit 1.85136 celsius
+    dT_web: !unit -25.1916 Δcelsius
+    dT_web_std:
+    RH: !unit 13.4911 percent
+    RH_std: !unit 0.25325 percent
+    machine_position: !unit 4.98 m
+  - sensor: btrn-temp-sensor-000004
+    T_amb: !unit 47.3812 celsius
+    T_amb_std: !unit 0.182885 celsius
+    T_dew: !unit 8.8696 celsius
+    T_dew_std:
+    T_web: !unit 8.55877 celsius
+    T_web_std: !unit 1.80369 celsius
+    dT_web: !unit -38.8224 Δcelsius
+    dT_web_std:
+    RH: !unit 10.5196 percent
+    RH_std: !unit 0.268376 percent
+    machine_position: !unit 6.16 m
+  - sensor: btrn-temp-sensor-000005
+    T_amb: !unit 43.9603 celsius
+    T_amb_std: !unit 0.110565 celsius
+    T_dew: !unit 8.53548 celsius
+    T_dew_std:
+    T_web: !unit 24.646 celsius
+    T_web_std: !unit 1.07772 celsius
+    dT_web: !unit -19.3143 Δcelsius
+    dT_web_std:
+    RH: !unit 12.2515 percent
+    RH_std: !unit 0.270818 percent
+    machine_position: !unit 7.34 m
+  - sensor: btrn-temp-sensor-000006
+    T_amb: !unit 32.0974 celsius
+    T_amb_std: !unit 0.188111 celsius
+    T_dew: !unit 6.34814 celsius
+    T_dew_std:
+    T_web: !unit 46.6876 celsius
+    T_web_std: !unit 0.545742 celsius
+    dT_web: !unit 14.5902 Δcelsius
+    dT_web_std:
+    RH: !unit 20.0377 percent
+    RH_std: !unit 0.16722 percent
+    machine_position: !unit 8.33 m
+  - sensor: btrn-temp-sensor-000007
+    T_amb: !unit 29.0775 celsius
+    T_amb_std: !unit 0.108318 celsius
+    T_dew: !unit 7.64848 celsius
+    T_dew_std:
+    T_web: !unit 27.2909 celsius
+    T_web_std: !unit 0.995651 celsius
+    dT_web: !unit -1.78663 Δcelsius
+    dT_web_std:
+    RH: !unit 26.0429 percent
+    RH_std: !unit 0.73414 percent
+    machine_position: !unit 1.65 m
+  - sensor: btrn-temp-sensor-000008
+    T_amb: !unit 40.0411 celsius
+    T_amb_std: !unit 0.640073 celsius
+    T_dew: !unit 14.6811 celsius
+    T_dew_std:
+    T_web: !unit 18.3764 celsius
+    T_web_std: !unit 2.63442 celsius
+    dT_web: !unit -21.6647 Δcelsius
+    dT_web_std:
+    RH: !unit 22.6548 percent
+    RH_std: !unit 0.858095 percent
+    machine_position: !unit 2 m
