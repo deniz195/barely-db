@@ -1,7 +1,7 @@
 # elan == electroanalytical methods
 
 import os
-import cProfile
+# import cProfile
 import logging
 import subprocess
 
@@ -9,8 +9,8 @@ import attr
 import cattr
 import typing
 
-import pandas as pd
-import numpy as np
+# import pandas as pd
+# import numpy as np
 import json
 import re
 import zipfile
@@ -263,9 +263,9 @@ class FileNameAnalyzer(object):
         
         
         
-from ipywidgets import widgets
 def copy_files_with_jupyter_button(fns, target_path, dry_run=False, show_button=True):
     def copy_files(button):
+        from ipywidgets import widgets
         import shutil
 
         progress = widgets.IntProgress(min=0, max=len(fns), value=0, description='Copying...')

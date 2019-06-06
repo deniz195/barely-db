@@ -12,13 +12,14 @@ with open('LICENSE') as f:
 
 setup(
     name='barely-db',
-    version='0.1.1',
+    version='0.1.2',
     description='A simple filesystem based database.',
     long_description=readme,
     author='Deniz Bozyigit',
     author_email='deniz195@gmail.com',
     url='https://bitbucket.org/battriondev/barely-db.git',
     license=license,
-    packages=find_packages(exclude=('tests', 'docs'))
+    packages=find_packages(exclude=('tests', 'docs')),
+    install_requires = ['attr', 'cattrs', 'objectpath'],
 )
 
