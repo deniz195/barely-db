@@ -332,12 +332,14 @@ class BarelyDB(object):
     # create list of possible default base paths 
     default_base_path = [\
         'G:\\Team Drives\\Database',
+        'G:\\Shared drives\\Database',
         '/Volumes/GoogleDrive/Team Drives/Database',
         '/Volumes/GoogleDrive/Teamablagen/Database']      
 
     known_bases = [\
         'G:\\My Drive\\Battrion_AG\\DATABASE\\',
         'G:\\Team Drives\\Database\\',
+        'G:\\Shared drives\\Database\\',
         'barelydb://']
 
     base_path = None
