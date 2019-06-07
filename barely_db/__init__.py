@@ -488,7 +488,7 @@ class BarelyDB(object):
         
         self.component_paths[base_buid] = component_paths
         
-        self.logger.info(f'Components for {base_buid} found: {len(component_paths)}')
+        self.logger.debug(f'Components for {base_buid} found: {len(component_paths)}')
         
         
         
@@ -837,6 +837,25 @@ class BarelyDBEntity(object):
             fp.write(output_json)  
         self.logger.info(f'Property written to file {property_file}.')
         
+
+    def create_entity_path(self, path_comment=None):
+        raise NotImplementedError('create_entity_path not implemented!')
+
+        # reload entities to make sure an existing path is not missed!
+        self.bdb.load_entities()
+
+        try:
+            # return if it exists
+            return self.get_entity_path()
+        except KeyError:
+            # Seems not to exist
+            pass
+
+        # XXXXX TODO: Need to determine in which path entity should be created!       
+
+
+
+
     def create_component_path(self, component, path_comment=None):
         if component is None:
             component = self.component
