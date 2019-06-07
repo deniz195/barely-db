@@ -12,7 +12,7 @@ def test_create_components(bdb):
         ent.create_component_path('P1')
     
     ent.create_component_path('T1')
-    folder = '/Users/laure.ciernik/Documents/Battrion/code/barely-db/tests/Database/Webs/WB3001_SL_LGA1'
+    folder = 'barely-db://Webs/WB3001_SL_LGA1'
     folder_path = Path(bdb.resolve_file(folder))
     contains_new_component = False
     path_new_component =''

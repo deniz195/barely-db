@@ -354,9 +354,9 @@ class BarelyDB(object):
         # if base path is None, check default base path for existance and
         # break at first existing path 
         if base_path is None:
-            for def_base_path in self.default_base_path  :
+            for def_base_path in self.default_base_path:
                 if os.path.exists(def_base_path):
-                    base_path = self.default_base_path
+                    base_path = def_base_path
                     self.logger.info(f'Using default path {base_path}')
                     break
  
