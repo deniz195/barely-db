@@ -27,6 +27,7 @@ def test_create_entity(bdb):
     assert(new_entity_path.exists())
 
     shutil.rmtree(new_entity_path, ignore_errors=True)
+    bdb.load_entities()
 
 def check_folder_contains_component(folder_path, component_name):
     contains_component = False
