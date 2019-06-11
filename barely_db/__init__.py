@@ -127,7 +127,18 @@ class BUIDParser(object):
             res = [r for r in res if self.is_known_buid_type(r)]
         
         if self.mode in ['all_unique', 'unique']:
-            res = list(set(res)) # remove duplicates
+            # res = list(set(res)) # remove duplicates
+            
+            # Remove duplicates but keep order:
+            # https://stackoverflow.com/questions/480214/how-do-you-remove-duplicates-from-a-list-whilst-preserving-order
+            def f7(seq):
+                seen = set()
+                seen_add = seen.add
+                return [x for x in seq if not (x in seen or seen_add(x))]
+
+            res = f7(res)
+
+
 
         if self.mode in ['last']:
             res.reverse()
@@ -186,86 +197,6 @@ class BUIDParser(object):
         kwds['validator'] = lambda obj, attr, value: self(value) is not None
 
         return attr.ib(**kwds)
-
-
-# class BUID(object):
-#     ''' Handles unique IDs of the form XXYYYY where XX is a two letter string 
-#     and YYYY is a 4 letter number.
-#     '''
-
-#     INVALID = 'XX9999'
-
-#     # instance variables and methods
-#     def __init__(self, buid_str, do_normalize=True):
-#         if do_normalize:
-#             self.buid = BUIDParser()(buid_str)
-#         else:
-#             self.buid = buid_str
-
-#     def __repr__(self):
-#         return f'{self.__class__.__qualname__}(\'{self.buid}\')'
-
-#     def __str__(self):
-#         if self.buid is None:
-#             return BUID.INVALID
-#         else:
-#             return self.buid
-
-
-
-def _test_BUID():
-    buid_p = BUIDParser(ignore_unknown=True, mode = 'unique')
-
-    aa = BUID(buid_p('XasfwX_sl293__Y'))
-    print(repr(aa))
-    print(str(aa))
-
-    def _test_normalization(s):
-        buid = buid_p.parse(s)
-        print(f'{s} --> {buid}')
-
-    print(f'Normal BUID parsing:')
-    _test_normalization('XasfwX_sl293_sl293__Y')
-    _test_normalization('XasfwX_sl293_sl333__Y')
-    _test_normalization('lorem ipsum')
-    _test_normalization('SL000293')
-    _test_normalization('WB0251')
-    _test_normalization('WB0252-D2')
-    _test_normalization('WB0252-AFD2')
-    _test_normalization('WB0252-AFD21231451')  
-                  
-    def _test_components(s):
-        buid = buid_p.parse_component(s)
-        print(f'{s} --> {buid}')
-                  
-    print(f'Only components:')
-    _test_components('WB0252-D2')
-    _test_components('CL0152-N50')
-    _test_components('WB0252')
-
-    buid_p2 = BUIDParser(ignore_unknown=True, mode = 'unique', allow_components = False)
-
-    def _test_normalization(s):
-        buid = buid_p2.parse(s)
-        print(f'{s} --> {buid}')
-                  
-    print(f'No components:')
-    _test_normalization('WB0252-D2')
-    _test_normalization('WB0252')
-              
-    def _test_parser_mode(buid_p):
-        s = 'XasfwX_sl293_sl333_dp241_sl333_dp241_Y'
-        buid = buid_p(s)
-        print(f'{s} --> {buid}')
-
-    _test_parser_mode(BUIDParser(ignore_unknown=True, mode = 'all'))
-    _test_parser_mode(BUIDParser(ignore_unknown=False, mode = 'all'))
-    _test_parser_mode(BUIDParser(ignore_unknown=True, mode = 'all_unique'))
-    _test_parser_mode(BUIDParser(ignore_unknown=False, mode = 'all_unique'))
-    _test_parser_mode(BUIDParser(ignore_unknown=True, mode = 'first'))
-    _test_parser_mode(BUIDParser(ignore_unknown=True, mode = 'last'))
-    _test_parser_mode(BUIDParser(ignore_unknown=False, mode = 'last'))
-    _test_parser_mode(BUIDParser(ignore_unknown=True, mode = 'unique'))
 
 
 # BUID.buid_regex = re.compile(BUID.buid_regex_str)
