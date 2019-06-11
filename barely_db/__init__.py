@@ -96,15 +96,6 @@ class BUIDParser(object):
             
         return result
 
-#     def parse_component(self, buid_str):
-#         regex_result = self.find(str(buid_str), self.buid_comp_regex)
-#         if self.allow_components:
-#             res = self.buid_comp_regex.findall(buid_str)
-#         else:
-#             res = self.buid_regex.findall(buid_str)
-        
-#         return     
-
     def parse_component(self, buid_str):        
         regex = self.buid_comp_must_regex
         regex_result = self.find(str(buid_str), regex)
@@ -119,11 +110,25 @@ class BUIDParser(object):
             
         return result
 
+    def parse_type(self, buid_str):        
+        regex = self.buid_regex
+        regex_result = self.find(str(buid_str), regex)
+        
+        if regex_result is None:
+            return None
+        
+        if self.mode in ['first', 'last', 'unique']:
+            result = self.format_type_from_regex(regex_result)
+        else:
+            result = [self.format_type_from_regex(r) for r in regex_result]
+            
+        return result
+
     def find(self, buid_str, regex):
-    
+   
         res = regex.findall(buid_str)
             
-        if self.ignore_unknown == True:
+        if self.ignore_unknown:
             res = [r for r in res if self.is_known_buid_type(r)]
         
         if self.mode in ['all_unique', 'unique']:
@@ -137,7 +142,6 @@ class BUIDParser(object):
                 return [x for x in seq if not (x in seen or seen_add(x))]
 
             res = f7(res)
-
 
 
         if self.mode in ['last']:
@@ -175,7 +179,7 @@ class BUIDParser(object):
             comp_id = ''
             
         if self.ignore_unknown is None:
-            if buid_type not in self.buid_types.values():
+            if self.is_known_buid_type(regex_result):
                 module_logger.warn(f'Unknown buid type {buid_type} in {repr(regex_result)}!')
 
         return '{}{:04d}{}'.format(buid_type, buid_id, comp_id)
@@ -189,6 +193,9 @@ class BUIDParser(object):
             
         return f'{comp_id}'
 
+    def format_type_from_regex(self, regex_result, ): 
+        buid_type = regex_result[0].upper()       
+        return f'{buid_type}'
 
     def attrib(self, *args, **kwds):
         ''' Creates an attr attribute that parses buids, based on the
@@ -279,6 +286,9 @@ class BarelyDB(object):
     property_file_glob = '*.property.json'
     preferred_property_files = []
     ignored_files = ['desktop.ini']
+
+    buid_types = BUIDParser.buid_types
+    buid_type_paths = None
 
     def __init__(self, base_path=None, path_depth=0, auto_reload_components = True):
         self.logger = module_logger
@@ -395,7 +405,36 @@ class BarelyDB(object):
         candidates_buid = [(buid_p(c), c) for c in candidates]
         self.entity_paths = {buid: path for buid, path in candidates_buid if buid is not None}
         self.logger.info(f'Entities found: {len(self.entity_paths)}')
-        
+
+        # Scan all paths and determine target directories for each buid type!
+        self.buid_type_paths = {}
+
+        buid_types_done = set()
+        buid_p = self.buid_scan
+
+        for buid, entity_path in self.entity_paths.items():
+            buid_type = buid_p.parse_type(buid)
+
+            if buid_type in buid_types_done:
+                pass
+            else:
+                if buid_type in self.buid_type_paths:
+                    # if this type was already registered, check if parent path is the same
+                    if self.buid_type_paths[buid_type] == entity_path.parent:
+                        pass
+                    else:
+                        module_logger.warning(f'Entity {buid} has a base path that does not match with other entities of the same type ({buid_type})!')
+                        buid_types_done[buid_type].add(buid_type)
+                else:
+                    # if this is the first entity of this type use the parent directory
+                    self.buid_type_paths[buid_type] = entity_path.parent
+
+        for buid_type, buid_path in self.buid_type_paths.items():
+            self.logger.info(f'{buid_type} --> {buid_path}')
+                    
+
+
+
 
     def load_components(self, buid, absolute=False):
         entity_path = self.get_entity_path(buid, absolute=absolute)
@@ -431,10 +470,38 @@ class BarelyDB(object):
     def entities(self):
         return list(self.entity_paths.keys())
 
-    #### Deprecated. Replaced by get_entity_path
-    def entity_path(self, buid, absolute=False):
-        self.logger.warn('entity_path is deprecated! use get_entity_path instead!')
-        return self.get_entity_path(buid, absolute=absolute)
+    # #### Deprecated. Replaced by get_entity_path
+    # def entity_path(self, buid, absolute=False):
+    #     self.logger.warn('entity_path is deprecated! use get_entity_path instead!')
+    #     return self.get_entity_path(buid, absolute=absolute)
+
+
+    def create_entity_path(self, buid, comment, absolute=False, reload=True):       
+        buid = self.buid_normalizer(buid)
+        buid_type = self.buid_normalizer.parse_type(buid)
+
+        try:
+            buid_path = self.get_entity_path(buid, absolute=absolute)
+            return buid_path
+        except KeyError:
+            # entity does not exist
+            pass
+
+        # create new path
+        buid_base_path = Path(self.buid_type_paths[buid_type])
+        buid_path = buid_base_path.joinpath(f'{buid}_{comment}')
+
+        # path = self.entity_paths[buid]
+        if absolute:
+            buid_path = buid_path.resolve().absolute()
+        
+        buid_path.mkdir(parents=False, exist_ok=True)
+
+        if reload:
+            self.load_entities()
+
+        return buid_path
+
 
     def get_entity_path(self, buid, absolute=False):
         buid = self.buid_normalizer(buid)
@@ -465,10 +532,10 @@ class BarelyDB(object):
         else:
             raise FileNotFoundError(f'No path for component {component} in {buid}!')
     
-    #### Deprecated. Replaced by get_entity_path
-    def entity_files(self, buid, glob, must_contain_buid = False, output_as_str=True):
-        self.logger.warn('entity_files is deprecated! use get_entity_files instead!')
-        return self.get_entity_files(buid, glob, must_contain_buid=must_contain_buid, output_as_str=output_as_str)
+    # #### Deprecated. Replaced by get_entity_path
+    # def entity_files(self, buid, glob, must_contain_buid = False, output_as_str=True):
+    #     self.logger.warn('entity_files is deprecated! use get_entity_files instead!')
+    #     return self.get_entity_files(buid, glob, must_contain_buid=must_contain_buid, output_as_str=output_as_str)
 
         
     def get_entity_files(self, buid, glob, must_contain_buid = False, output_as_str=True):
@@ -771,29 +838,18 @@ class BarelyDBEntity(object):
         with open(property_file_res, 'w') as fp:
             fp.write(output_json)  
         self.logger.info(f'Property written to file {property_file}.')
-        
-
-    def create_entity_path(self, path_comment=None):
-        raise NotImplementedError('create_entity_path not implemented!')
-
-        # reload entities to make sure an existing path is not missed!
-        self.bdb.load_entities()
-
-        try:
-            # return if it exists
-            return self.get_entity_path()
-        except KeyError:
-            # Seems not to exist
-            pass
-
-        # XXXXX TODO: Need to determine in which path entity should be created!       
 
 
+    def create_entity_path(self, path_comment):
+        entity_path = self.bdb.create_entity_path(self.buid, comment=path_comment)
+        return entity_path
 
-
-    def create_component_path(self, component, path_comment=None):
+    def create_component_path(self, component, path_comment):
         if component is None:
             component = self.component
+
+        if component is None:
+            raise ValueError(f'Cannot create component path if no component is specified ({self.buid_with_component})!')
         
         existing_path = self.get_component_paths().get(component, None)
         if existing_path is not None:
@@ -815,9 +871,9 @@ class BarelyDBEntity(object):
             
         
         
-    ### Deprecated! Replaced by get_entity_path
-    def entity_path(self, absolute=False):
-        return self.bdb.entity_path(self.buid, absolute=absolute)      
+    # ### Deprecated! Replaced by get_entity_path
+    # def entity_path(self, absolute=False):
+    #     return self.bdb.entity_path(self.buid, absolute=absolute)      
 
     def get_entity_path(self, absolute=False):
         return self.bdb.get_entity_path(self.buid, absolute=absolute)      
@@ -831,9 +887,9 @@ class BarelyDBEntity(object):
     def get_entity_name(self):
         return self.bdb.get_entity_name(self.buid)      
 
-    ### Deprecated! Replaced by get_entity_files
-    def entity_files(self, *args, **kwds):
-        return self.bdb.entity_files(self.buid, *args, **kwds)
+    # ### Deprecated! Replaced by get_entity_files
+    # def entity_files(self, *args, **kwds):
+    #     return self.bdb.entity_files(self.buid, *args, **kwds)
 
     def get_entity_files(self, *args, **kwds):
         return self.bdb.get_entity_files(self.buid, *args, **kwds)

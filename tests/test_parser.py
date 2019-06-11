@@ -69,6 +69,23 @@ def test_parser_basic():
     _test_parser_mode(BUIDParser(ignore_unknown=False, mode = 'last'), 'DP0241')
     _test_parser_mode(BUIDParser(ignore_unknown=True, mode = 'unique'), None)
 
+              
+    def _test_parser_type(buid_p, result=None):
+        s = 'XasfwX_sl293_sl333_dp241_sl333_dp241_Y'
+        buid = buid_p.parse_type(s)
+        print(f'{s} --> {buid}')
+        assert(buid == result)
+
+    _test_parser_type(BUIDParser(ignore_unknown=True, mode = 'all'), ['SL', 'SL', 'SL'])
+    _test_parser_type(BUIDParser(ignore_unknown=False, mode = 'all'), ['SL', 'SL', 'DP', 'SL', 'DP'])
+    # _test_parser_type(BUIDParser(ignore_unknown=True, mode = 'all_unique'), ['SL']) # NOT CORRECTLY IMPLEMENTED YET!
+    # _test_parser_type(BUIDParser(ignore_unknown=False, mode = 'all_unique'), ['SL', 'DP']) # NOT CORRECTLY IMPLEMENTED YET!
+    _test_parser_type(BUIDParser(ignore_unknown=True, mode = 'first'), 'SL')
+    _test_parser_type(BUIDParser(ignore_unknown=True, mode = 'last'), 'SL')
+    _test_parser_type(BUIDParser(ignore_unknown=False, mode = 'last'), 'DP')
+    _test_parser_type(BUIDParser(ignore_unknown=True, mode = 'unique'), None)
+
+
 
 # def test_parser_extended(bdb):
     
