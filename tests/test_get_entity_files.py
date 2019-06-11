@@ -8,7 +8,7 @@ from barely_db import *
 
 def test_get_entity_files(bdb):
     entity_files_list = bdb.get_entity_files('WB3001', '*')
-    folder = '/Users/laure.ciernik/Documents/Battrion/code/barely-db/tests/Database/Webs/WB3001_SL_LGA1'
+    folder = 'barely-db://Webs/WB3001_SL_LGA1'
     folder_path = bdb.resolve_file(folder) 
     all_paths = []
     for filename in os.listdir(folder_path):

@@ -341,7 +341,8 @@ class BarelyDB(object):
         'G:\\My Drive\\Battrion_AG\\DATABASE\\',
         'G:\\Team Drives\\Database\\',
         'G:\\Shared drives\\Database\\',
-        'barelydb://']
+        'barelydb://',
+        'barely-db://',]
 
     base_path = None
     property_file_glob = '*.property.json'
@@ -391,8 +392,11 @@ class BarelyDB(object):
         base_path_str = base_path_str.replace('\\', '\\\\')
         # check if path structure of filename is Windows-like 
         is_windows = False
+        is_URL_like = False
         if "\\" in filename:
             is_windows = True
+        elif "://" in filename:
+            is_URL_like = True
 
         for b_re in self.known_bases_re:
             filename = b_re.sub(base_path_str, filename)
@@ -400,7 +404,7 @@ class BarelyDB(object):
             if is_windows and ('/' in base_path_str):
                 filename = filename.replace("\\","/") # replace backslashes to forward slashes 
             # check it is the other way around        
-            elif (not is_windows) and ('\\' in base_path_str):
+            elif (not is_windows) and (not is_URL_like) and ('\\' in base_path_str):
                 filename = filename.replace("/","\\")
 
         return filename
