@@ -179,7 +179,7 @@ class BUIDParser(object):
             comp_id = ''
             
         if self.ignore_unknown is None:
-            if self.is_known_buid_type(regex_result):
+            if not self.is_known_buid_type(regex_result):
                 module_logger.warn(f'Unknown buid type {buid_type} in {repr(regex_result)}!')
 
         return '{}{:04d}{}'.format(buid_type, buid_id, comp_id)
@@ -462,7 +462,7 @@ class BarelyDB(object):
         
         self.component_paths[base_buid] = component_paths
         
-        self.logger.debug(f'Components for {base_buid} found: {len(component_paths)}')
+        # self.logger.debug(f'Components for {base_buid} found: {len(component_paths)}')
         
         
         
