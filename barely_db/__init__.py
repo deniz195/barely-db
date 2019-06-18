@@ -1,5 +1,5 @@
 import logging
-
+import collections
 import typing
 import attr
 import cattr
@@ -273,7 +273,8 @@ class BarelyDB(object):
         'G:\\Team Drives\\Database',
         'G:\\Shared drives\\Database',
         '/Volumes/GoogleDrive/Team Drives/Database',
-        '/Volumes/GoogleDrive/Teamablagen/Database']      
+        '/Volumes/GoogleDrive/Teamablagen/Database',
+        '/Volumes/GoogleDrive/Geteilte Ablagen/Database']      
 
     known_bases = [\
         'G:\\My Drive\\Battrion_AG\\DATABASE\\',
@@ -302,7 +303,6 @@ class BarelyDB(object):
                     base_path = def_base_path
                     self.logger.info(f'Using default path {base_path}')
                     break
- 
 
         self.base_path = Path(base_path)
         self.base_path = self.base_path.resolve().absolute()
@@ -356,6 +356,7 @@ class BarelyDB(object):
     
         if relative_bdb_path:
             code_path = ''
+
             for p in Path(__file__).absolute().parts:
                 code_path = Path(code_path).joinpath(p)
                 if p.find('__code') >= 0:
@@ -364,7 +365,6 @@ class BarelyDB(object):
             
             if not code_path_valid:
                 self.logger.warning(f'No code path found, relative to bdb code path {code_path}! Using default code in base_path!')
-                
                     
 
         if not code_path_valid:
@@ -399,10 +399,16 @@ class BarelyDB(object):
         # candidates = [x for x in self.base_path.iterdir() if x.is_dir()]
         
         candidates = iter_subdir(self.base_path, depth=self.path_depth)
-
         buid_p = self.buid_scan
             
         candidates_buid = [(buid_p(c), c) for c in candidates]
+        found_buid = [list(t) for t in zip(*candidates_buid)]
+        found_buid = found_buid[0]
+        duplicate_buid = [item for item, count in collections.Counter(found_buid).items() if count > 1]
+        duplicate_buid = [i for i in duplicate_buid if i]
+        if duplicate_buid:
+            self.logger.warning(f'Following entities have multiple paths/folders: {duplicate_buid}')
+
         self.entity_paths = {buid: path for buid, path in candidates_buid if buid is not None}
         self.logger.info(f'Entities found: {len(self.entity_paths)}')
 
@@ -424,7 +430,7 @@ class BarelyDB(object):
                         pass
                     else:
                         module_logger.warning(f'Entity {buid} has a base path that does not match with other entities of the same type ({buid_type})!')
-                        buid_types_done[buid_type].add(buid_type)
+                        buid_types_done.add(buid_type)
                 else:
                     # if this is the first entity of this type use the parent directory
                     self.buid_type_paths[buid_type] = entity_path.parent
