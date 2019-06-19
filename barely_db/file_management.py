@@ -321,17 +321,31 @@ class RevisionFile(object):
         if not self.exists():
             return self
 
-        if self.revision is None:
-            rf = RevisionFile(base_name=self.base_name,
+        old_rev_exists, path_to_old_rev = self.old_revision_folder_exists()
+        if not old_rev_exists:
+            os.mkdir(path_to_old_rev)
+
+        if self.revision is None :
+            fn_name =Path(self.base_name).name
+            new_name = path_to_old_rev.joinpath(fn_name)
+            rf = RevisionFile(base_name=new_name,
                               revision=0)
-        else:
-            rf = self
+        else :
+            fn_name =Path(self.base_name).name
+            new_name = path_to_old_rev.joinpath(fn_name)
+            rf = RevisionFile(base_name=new_name,
+                                   revision=self.revision)
 
         while rf.exists():
             # pray to god that this converges ;)
             rf = rf.get_next_revision_file()
 
         return rf
+    
+    def old_revision_folder_exists(self):
+            path_to_file = Path(self.full_name).parent
+            path_to_old_rev = path_to_file.joinpath('bdb_old')
+            return path_to_old_rev.exists(),path_to_old_rev
 
     def create_new_revision(self):
         if self.exists():
@@ -340,8 +354,14 @@ class RevisionFile(object):
             module_logger.info(f'Created new revision ({new_rev.revision}) of file {self.base_name}!')
 
     def get_last_revision(self):
+        old_rev_exists, path_to_old_rev = self.old_revision_folder_exists()
+        if not old_rev_exists:
+            return None
+    
         last_rev = None
-        rf = RevisionFile(base_name=self.base_name, revision=0)
+        fn_name = Path(self.base_name).name
+        new_path = path_to_old_rev.joinpath(fn_name)
+        rf = RevisionFile(base_name=self.new_path, revision=0)
 
         while rf.exists():
             # pray to god that this converges ;)
