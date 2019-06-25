@@ -757,6 +757,10 @@ class BarelyDBEntity(object):
         else:
             return f'{self.__class__.__qualname__}(\'{self.buid}-{self.component}\')'
     
+    def __eq__(self,other):
+        return self.buid_with_component == other.buid_with_component
+
+
     @property
     def buid(self):
         return self._buid

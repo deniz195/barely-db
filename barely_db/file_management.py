@@ -320,11 +320,12 @@ class RevisionFile(object):
     def get_new_revision(self):
         if not self.exists():
             return self
-
+        
         old_rev_exists, path_to_old_rev = self.old_revision_folder_exists()
+        
         if not old_rev_exists:
             os.mkdir(path_to_old_rev)
-
+        
         if self.revision is None :
             fn_name =Path(self.base_name).name
             new_name = path_to_old_rev.joinpath(fn_name)
@@ -339,7 +340,6 @@ class RevisionFile(object):
         while rf.exists():
             # pray to god that this converges ;)
             rf = rf.get_next_revision_file()
-
         return rf
     
     def old_revision_folder_exists(self):
@@ -431,7 +431,7 @@ def serialize_to_file(base_file_identifier=None,
 
             serialize = getattr(self, serialize_method)
             serial_data = serialize() 
-
+            
             if revision:
                 revision_file = RevisionFile(base_name=filename)
                 revision_file.create_new_revision()

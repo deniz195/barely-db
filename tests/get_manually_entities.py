@@ -1,13 +1,7 @@
 import os
 from pathlib import Path
 
-def get_all_entity(path, mode):
-    if mode == 'name':
-        return get_all_entity_name(path)
-    else:
-        return get_all_entity_paths(path)
-
-def get_all_entity_name(path):
+def _get_all_entity_name(path):
     path_of_headfolders= [f.path for f in os.scandir(path) if f.is_dir() ]
     all_pairs = dict()
     for head_folder in path_of_headfolders:
@@ -19,7 +13,7 @@ def get_all_entity_name(path):
     return list(all_pairs.keys())
 
 
-def get_all_entity_paths(path):
+def _get_all_entity_paths(path):
     path_of_headfolders= [f.path for f in os.scandir(path) if f.is_dir() ]
     all_pairs = dict()
     for head_folder in path_of_headfolders:
@@ -29,3 +23,9 @@ def get_all_entity_paths(path):
                 pairs = dict(zip(sub_names,sub_paths))
                 all_pairs.update(pairs)
     return list(all_pairs.values())
+
+def get_all_entity(path, mode):
+    if mode == 'name':
+        return _get_all_entity_name(path)
+    else:
+        return _get_all_entity_paths(path)

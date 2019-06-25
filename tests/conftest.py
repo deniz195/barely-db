@@ -5,10 +5,12 @@ from pathlib import Path
 path_to_file = os.path.dirname(os.path.abspath(__file__))
 path_to_file = Path(path_to_file)
 db   = path_to_file.joinpath('..','barely-db')
+ud = path_to_file.joinpath('..','..','unitdoc')
 
 import sys
 sys.path.append('..')
 sys.path.insert(0, os.fspath(db))
+sys.path.insert(0, os.fspath(ud))
 
 
 import barely_db
