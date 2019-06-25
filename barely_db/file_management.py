@@ -264,8 +264,9 @@ class FileNameAnalyzer(object):
         
         
 def copy_files_with_jupyter_button(fns, target_path, dry_run=False, show_button=True):
+    from ipywidgets import widgets
+
     def copy_files(button):
-        from ipywidgets import widgets
         import shutil
 
         progress = widgets.IntProgress(min=0, max=len(fns), value=0, description='Copying...')
