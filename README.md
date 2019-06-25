@@ -1,2 +1,2 @@
 # barely-db
-A mini-framework that helps to manage folderbased database.
+A framework that helps to manage a folderbased database.
