@@ -361,7 +361,7 @@ class RevisionFile(object):
         last_rev = None
         fn_name = Path(self.base_name).name
         new_path = path_to_old_rev.joinpath(fn_name)
-        rf = RevisionFile(base_name=self.new_path, revision=0)
+        rf = RevisionFile(base_name=new_path, revision=0)
 
         while rf.exists():
             # pray to god that this converges ;)
