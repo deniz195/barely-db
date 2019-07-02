@@ -101,7 +101,7 @@ class FileManager(object):
         new_paths = self.secondary_data_paths + secondary_data_paths
         self.set_secondary_data_paths(new_paths)       
             
-    def _get_files(self, file_glob, paths):
+    def _get_files(self, file_glob, paths, directories_only=False):
         from itertools import product
         
         if not isinstance(file_glob, list):
@@ -110,6 +110,9 @@ class FileManager(object):
         fns = []
         for p, g in product(paths, file_glob):
             fns += list(p.glob(g))
+
+        if directories_only:
+            fns = [fn for fn in fns if fn.is_dir()]
             
         if self.auto_string: 
             fns = [str(f) for f in fns]
@@ -119,8 +122,11 @@ class FileManager(object):
         
         return fns
 
-    def get_files(self, file_glob):
-        return self._get_files(file_glob, self.raw_path)   
+    def get_files(self, file_glob, directories_only=False):
+        return self._get_files(file_glob, self.raw_path, directories_only=directories_only)   
+
+    def get_directories(self, dir_glob):
+        return self._get_files(dir_glob, self.raw_path, directories_only=True)   
     
     def get_export_files(self, file_glob):
         all_secondary_paths = [self.export_path] + self.secondary_data_paths
