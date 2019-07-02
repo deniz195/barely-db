@@ -58,7 +58,8 @@ class BUIDParser(object):
     
     ignore_unknown = None
 
-    def __init__(self, ignore_unknown=None, warn_empty=True, mode = 'unique', allow_components=True):
+    def __init__(self, ignore_unknown=None, warn_empty=True, mode = 'unique', 
+                       allow_components=True, allowed_types = None):
         ''' Creates a BUID parser. 
         Parameters:
         ignore_unknown = None: Parses unknown BUID types but warns
@@ -74,10 +75,24 @@ class BUIDParser(object):
         mode = 'all_unique': Returns all BUIDs, without duplicates
         '''
 
+        if allowed_types is None:
+            pass
+        else:
+            if ignore_unknown is False:
+                raise ValueError('ignore_unknown cannot be set to False when allowed_types are specified!')
+            elif ignore_unknown is None:
+                ignore_unknown = True
+
+            self.buid_types = {k: v for k, v in self.buid_types.items() if v in allowed_types}
+            module_logger.debug(f'Buid parsing restricted to types {self.buid_types.values()}')
+
+
         self.ignore_unknown = ignore_unknown
         self.warn_empty = warn_empty
         self.mode = mode
         self.allow_components = allow_components
+
+
 
     def __call__(self, buid_str):
         return self.parse(buid_str)
