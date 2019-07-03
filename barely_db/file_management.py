@@ -188,11 +188,13 @@ class FileNameAnalyzer(object):
         self.logger = module_logger
         self.last_filename = ''
         
-    def add_regex(self, regex, param_name, numeric = False, required = True):
+    def add_regex(self, regex, param_name, numeric = False, required = True, converter=None):
         regex_entry = {'regex': regex, 
                        'param_name': param_name, 
                        'numeric': numeric, 
-                       'required': required}
+                       'required': required,
+                       'converter': converter,
+                       }
         self.regex_entries.append(regex_entry)
         pass
 
@@ -228,7 +230,10 @@ class FileNameAnalyzer(object):
                     else:
                         results = results_name_only                        
                         self.logger.warn('Parameter (%s) ambiguous in the filename! This might be a problem. Using first of %s.' % (r['param_name'], str(results)))                   
-                    
+
+                if r['converter']:
+                    results[0] = r['converter'](results[0])
+
                 if r['numeric']:
                     info[r['param_name']] = float(results[0])
                 else:
@@ -442,7 +447,7 @@ def serialize_to_file(base_file_identifier=None,
                 self.open_in_explorer(entity)
             return filename
 
-        def load_from_file(filename, default=None):
+        def load_from_file(filename, default=None, fail_to_default=False):           
             if deserialize_classmethod is None:
                 module_logger.error(f'Class {cls.__qualname__} cannot be deserialized!')
                 return None
@@ -455,7 +460,7 @@ def serialize_to_file(base_file_identifier=None,
                     file_data = file_data_binary if binary else file_data_binary.decode()
 
             except FileNotFoundError:
-                if default is None:
+                if default is None and not fail_to_default:
                     raise
                 else:
                     module_logger.info(f'Using default, because file not found ({filename}).')
@@ -468,7 +473,10 @@ def serialize_to_file(base_file_identifier=None,
 
 
 
-        def load_from_entity(entity, file_identifier=None, allow_parent=None, force_parent=False, default=None):
+        def load_from_entity(entity, file_identifier=None, allow_parent=None, force_parent=False, default=None, fail_to_default=False):           
+            if entity is None and fail_to_default:
+                return default
+                
             if allow_parent is None:
                 allow_parent = default_allow_parent
 
@@ -486,7 +494,7 @@ def serialize_to_file(base_file_identifier=None,
                 filename = cls.get_serialization_filename(entity.get_parent_entity(), 
                                                           file_identifier=file_identifier)
 
-            return cls.load_from_file(filename, default=default)
+            return cls.load_from_file(filename, default=default, fail_to_default=fail_to_default)
 
         cls.get_serialization_filename = get_serialization_filename
         cls.save_to_file = save_to_file
