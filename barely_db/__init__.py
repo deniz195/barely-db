@@ -84,7 +84,7 @@ class BUIDParser(object):
                 ignore_unknown = True
 
             self.buid_types = {k: v for k, v in self.buid_types.items() if v in allowed_types}
-            module_logger.debug(f'Buid parsing restricted to types {self.buid_types.values()}')
+            # module_logger.debug(f'Buid parsing restricted to types {self.buid_types.values()}')
 
 
         self.ignore_unknown = ignore_unknown

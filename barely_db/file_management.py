@@ -416,13 +416,16 @@ def serialize_to_file(base_file_identifier=None,
 
             return filename
 
-        def save_to_file(self, filename, override=False, revision=True):
+        def save_to_file(self, filename, override=False, revision=True, use_suffix=False):
             if serialize_method is None:
                 module_logger.error(f'Object from class {self.__class__.__qualname__} cannot be deserialized!')
                 return None
 
             serialize = getattr(self, serialize_method)
             serial_data = serialize() 
+
+            if use_suffix:
+                filename += suffix
 
             if revision:
                 revision_file = RevisionFile(base_name=filename)
