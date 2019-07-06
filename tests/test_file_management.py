@@ -97,6 +97,8 @@ def test_serialize_to_file(bdb):
 
     fn = x1.save_to_entity(test_ent, file_identifier='LALA')
     assert('LALA.UHHH.yaml' == Path(fn).name)
+    assert(x1.file_serializer.match_filename(fn, ))
+    assert(x1.file_serializer.match_filename(fn, file_identifier='LALA'))
     assert(Path(fn).exists())
 
 
@@ -107,10 +109,12 @@ def test_serialize_to_file(bdb):
     x2 = X2()
     fn = x2.save_to_entity(test_ent)
     assert('some_data.yaml' == Path(fn).name)
+    assert(x2.file_serializer.match_filename(fn, ))
     assert(Path(fn).exists())
 
     fn = x2.save_to_entity(test_ent, file_identifier='MANA')
     assert('MANA' == Path(fn).name)
+    assert(x2.file_serializer.match_filename(fn, file_identifier='MANA'))
     assert(Path(fn).exists())
 
 
@@ -121,6 +125,7 @@ def test_serialize_to_file(bdb):
     x3 = X3()
     fn = x3.save_to_entity(test_ent)
     assert('WB9001-Y9_some_data.yaml' == Path(fn).name)
+    assert(x3.file_serializer.match_filename(fn))
     assert(Path(fn).exists())
 
 
@@ -131,6 +136,8 @@ def test_serialize_to_file(bdb):
     x4 = X4()
     fn = x4.save_to_entity(test_ent, file_identifier='PALA')
     assert('WB9001-Y9_PALA.some_data.yaml' == Path(fn).name)
+    assert(x4.file_serializer.match_filename(fn))
+    assert(x4.file_serializer.match_filename(fn, file_identifier='PALA'))
     assert(Path(fn).exists())
 
     with pytest.raises(ValueError, match='No file_identifier given.'):

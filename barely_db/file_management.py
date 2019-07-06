@@ -22,7 +22,9 @@ import functools
 
 from enum import Enum, IntEnum
 
-__all__ = ['open_in_explorer', 'FileManager', 'FileNameAnalyzer', 'copy_files_with_jupyter_button', 'serialize_to_file', 'RevisionFile']
+from .parser import *
+
+__all__ = ['open_in_explorer', 'FileManager', 'FileNameAnalyzer', 'copy_files_with_jupyter_button', 'serialize_to_file', 'RevisionFile', 'ClassFileSerializer']
 
 # from chunked_object import *
 # from message_dump import *
@@ -380,6 +382,9 @@ class RevisionFile(object):
 
 class ClassFileSerializer(object):
 
+    cls_registry = {}
+    filename_pattern_registry = {}
+
     cls=None
 
     base_file_identifier=None
@@ -408,8 +413,49 @@ class ClassFileSerializer(object):
         self.allow_parent = allow_parent
         self.binary = binary
 
+
+    @classmethod
+    def get_class_from_filename(cls, fn):
+        found_cls = None
+
+        for class_name, cfs in cls.cls_registry.items():
+            if cfs.match_filename(fn):
+                found_cls = cfs.cls
+                module_logger.debug(f'Found class {found_cls.__qualname__} for file {Path(fn).name}')
+        
+        return found_cls
+
+
     def set_class(self, cls):        
         self.cls = cls
+
+        if self.prefix or self.suffix or self.base_file_identifier:
+            ClassFileSerializer.cls_registry[cls.__qualname__] = self
+            ClassFileSerializer.filename_pattern_registry[self.get_filename_regex()] = self
+
+    def get_filename_regex(self, file_identifier=None):
+        rg = r''
+        if self.prepend_buid:
+            rg += BUIDParser.buid_comp_regex.pattern+'_'
+        if self.prefix:
+            rg += self.prefix
+        if file_identifier:
+            rg += file_identifier
+        elif self.base_file_identifier:
+            rg += self.base_file_identifier
+        else:
+            rg += '(.*)'
+
+        if self.suffix:
+            rg += self.suffix
+
+        return rg
+
+    def match_filename(self, fn, file_identifier=None):
+        rg = self.get_filename_regex(file_identifier=file_identifier)
+        return re.match(rg, Path(fn).name)
+
+
 
     def get_serialization_filename_from_entity(self, entity, file_identifier=None):
         if file_identifier is None:
@@ -459,6 +505,15 @@ class ClassFileSerializer(object):
             if revision:
                 revision_file.reduce_last_revision()        
 
+
+    def load_raw_from_file(self, filename):
+        with open(filename, 'rb') as f:
+            file_data_binary = f.read()
+            file_data = file_data_binary if self.binary else file_data_binary.decode()
+        
+        return file_data
+
+
     def load_from_file(self, filename, default=None, fail_to_default=False):           
         if self.deserialize_classmethod is None:
             module_logger.error(f'Class {self.cls.__qualname__} cannot be deserialized!')
@@ -467,9 +522,7 @@ class ClassFileSerializer(object):
         deserialize = getattr(self.cls, self.deserialize_classmethod)
         
         try:
-            with open(filename, 'rb') as f:
-                file_data_binary = f.read()
-                file_data = file_data_binary if self.binary else file_data_binary.decode()
+            file_data = self.load_raw_from_file(filename)
 
         except FileNotFoundError:
             if default is None and not fail_to_default:
@@ -535,7 +588,7 @@ def serialize_to_file(base_file_identifier=None,
     Serialization is performed by class methods .serialize() and .deserialize().
     '''
 
-    class_file_serializer = ClassFileSerializer(base_file_identifier=base_file_identifier, 
+    file_serializer = ClassFileSerializer(base_file_identifier=base_file_identifier, 
                       prepend_buid=prepend_buid, 
                       prefix=prefix, suffix=suffix,
                       serialize_method = serialize_method,
@@ -545,16 +598,16 @@ def serialize_to_file(base_file_identifier=None,
 
     def decorate_class(cls):
 
-        class_file_serializer.set_class(cls)
+        file_serializer.set_class(cls)
 
-        cls.class_file_serializer = class_file_serializer
+        cls.file_serializer = file_serializer
 
-        cls.get_serialization_filename = functools.partialmethod(class_file_serializer.get_serialization_filename_from_entity)
-        cls.save_to_file = functools.partialmethod(class_file_serializer.save_to_file)
-        cls.save_to_entity = functools.partialmethod(class_file_serializer.save_to_entity)
-        cls.load_from_file = functools.partialmethod(class_file_serializer.load_from_file)
-        cls.load_from_entity = functools.partialmethod(class_file_serializer.load_from_entity)
-        cls.open_in_explorer = functools.partialmethod(class_file_serializer._open_in_explorer)
+        cls.get_serialization_filename = functools.partialmethod(file_serializer.get_serialization_filename_from_entity)
+        cls.save_to_file = functools.partialmethod(file_serializer.save_to_file)
+        cls.save_to_entity = functools.partialmethod(file_serializer.save_to_entity)
+        cls.load_from_file = functools.partialmethod(file_serializer.load_from_file)
+        cls.load_from_entity = functools.partialmethod(file_serializer.load_from_entity)
+        cls.open_in_explorer = functools.partialmethod(file_serializer._open_in_explorer)
 
         return cls
        
