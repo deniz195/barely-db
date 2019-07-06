@@ -558,10 +558,7 @@ class BarelyDB(object):
     #     self.logger.warn('entity_files is deprecated! use get_entity_files instead!')
     #     return self.get_entity_files(buid, glob, must_contain_buid=must_contain_buid, output_as_str=output_as_str)
 
-        
-    def get_entity_files(self, buid, glob, must_contain_buid = False, output_as_str=True):
-        buid = self.buid_normalizer(buid)        
-        path = self.get_entity_path(buid)
+    def _get_files(self, buid, path, glob, must_contain_buid = False, output_as_str=True):
         files = path.glob(glob)
 
         def ignore_file(fn):
@@ -578,6 +575,18 @@ class BarelyDB(object):
             files = [str(fn) for fn in files]
 
         return list(files)
+
+    def get_component_files(self, buid, component, glob, must_contain_buid = False, output_as_str=True):
+        buid = self.buid_normalizer(buid)        
+        path = self.get_component_path(buid, component)
+        return self._get_files(buid, path, glob, must_contain_buid=must_contain_buid, output_as_str=output_as_str)
+
+    def get_entity_files(self, buid, glob, must_contain_buid = False, output_as_str=True):
+        buid = self.buid_normalizer(buid)        
+        path = self.get_entity_path(buid)
+        return self._get_files(buid, path, glob, must_contain_buid=must_contain_buid, output_as_str=output_as_str)
+
+
 
 
     def entity_properties_files(self, buid, output_as_str=True):
@@ -912,8 +921,14 @@ class BarelyDBEntity(object):
     # def entity_files(self, *args, **kwds):
     #     return self.bdb.entity_files(self.buid, *args, **kwds)
 
-    def get_entity_files(self, *args, **kwds):
-        return self.bdb.get_entity_files(self.buid, *args, **kwds)
+    def get_entity_files(self, glob, must_contain_buid = False, output_as_str=True):
+        return self.bdb.get_entity_files(self.buid, glob, must_contain_buid=must_contain_buid, output_as_str=output_as_str)
+
+    def get_component_files(self, glob, component=None, must_contain_buid = False, output_as_str=True):
+        if component is None:
+            component = self.component
+
+        return self.bdb.get_component_files(self.buid, component, glob, must_contain_buid=must_contain_buid, output_as_str=output_as_str)
 
     def get_component_paths(self, absolute=False):
         return self.bdb.get_component_paths(self.buid, absolute=absolute)      
