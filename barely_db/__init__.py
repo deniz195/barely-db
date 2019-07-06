@@ -24,9 +24,9 @@ import objectpath # http://objectpath.org/reference.html
 # from .file_management import FileManager, FileNameAnalyzer, serialize_to_file, open_in_explorer
 from .parser import *
 from .file_management import *
-from .tools import *
+# from .tools import *
 
-__all__ = ['BUIDParser', 'BarelyDB', 'BarelyDBEntity', 'BarelyDBChecker', 'FileManager', 'FileNameAnalyzer', 'serialize_to_file', 'open_in_explorer', 'ClassFileSerializer']
+__all__ = ['BUIDParser', 'BarelyDB', 'BarelyDBEntity', 'FileManager', 'FileNameAnalyzer', 'serialize_to_file', 'open_in_explorer', 'ClassFileSerializer']
 
 # create logger
 module_logger = logging.getLogger(__name__)
