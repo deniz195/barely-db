@@ -99,10 +99,11 @@ class BarelyDBSyncer(object):
         self.logger.info(f'Setting dry run to {value}!')
         self._dry_run = value
     
-    def __init__(self, bdb_source, bdb_target=None):
+    def __init__(self, bdb_source, bdb_target=None, dependent_files_resolver=None):
         self._bdb_source = bdb_source
         self._bdb_target = bdb_target
         self.logger = logging.getLogger(self.__class__.__qualname__)
+        self.dependent_files_resolver = dependent_files_resolver
         
     def make_new_target_bdb(self, new_base_path):
         module_logger.info(f'Making new bdb at {new_base_path}')
@@ -177,6 +178,9 @@ class BarelyDBSyncer(object):
 
 
     def copy_files(self, glob, dependent_files_resolver=None):
+        if dependent_files_resolver is None:
+            dependent_files_resolver = self.dependent_files_resolver
+
         bc = BarelyDBChecker(self.bdb_source)
         diter = bc.discover_files(glob, dependent_files_resolver=dependent_files_resolver)
 
@@ -187,6 +191,13 @@ class BarelyDBSyncer(object):
             
         self.logger.info(f'Copied {counter} files')
             
+
+    def copy_all(self, glob='*.yaml'):
+        self.copy_buid_types()
+        self.copy_entities()
+
+        self.copy_files('*.yaml', dependent_files_resolver=self.dependent_files_resolver)
+        self.bdb_target.load_entities()
         
 
 
