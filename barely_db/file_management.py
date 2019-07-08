@@ -360,8 +360,8 @@ class RevisionFile(object):
     
     def old_revision_folder_exists(self):
             path_to_file = Path(self.full_name).parent
-            path_to_old_rev = path_to_file.joinpath('bdb_old')
-            return path_to_old_rev.exists(),path_to_old_rev
+            path_to_old_rev = path_to_file.joinpath('.bdb_old')
+            return path_to_old_rev.exists(), path_to_old_rev
 
     def create_new_revision(self):
         if self.exists():

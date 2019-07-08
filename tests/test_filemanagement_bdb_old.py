@@ -19,16 +19,30 @@ class C():
 
 def test_save_to_file(bdb):
     
-    web = bdb.get_entity('WB3001')
+    web = bdb.get_entity('WB9002')
     web_path= web.get_entity_path()
-    before = [f for f in os.listdir(web_path.joinpath('bdb_old'))]
-    for i in range(6):
+    try:
+        before = [f for f in os.listdir(web_path.joinpath('.bdb_old'))]
+    except FileNotFoundError:
+        before = []
+
+    no_revisions = 6
+
+    some_ob = C(name=('object'+str(0)))
+    fn = C.get_serialization_filename(web)
+
+    if Path(fn).exists():
+        expected_revisions = no_revisions
+    else:
+        expected_revisions = no_revisions -1
+
+    for i in range(no_revisions):
         some_ob = C(name=('object'+str(i)))
         fn_obj = web.save_object(some_ob)
         assert(Path(fn_obj).exists())
     
-    after = [f for f in os.listdir(web_path.joinpath('bdb_old'))]
-    assert(len(before)==len(after)-6)
+    after = [f for f in os.listdir(web_path.joinpath('.bdb_old'))]
+    assert(len(before)==len(after)-expected_revisions)
 
     
 

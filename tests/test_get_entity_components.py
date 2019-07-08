@@ -1,6 +1,7 @@
 import pytest
 import os
 from pathlib import Path
+import re
 
 import barely_db
 from barely_db import *
@@ -25,9 +26,11 @@ def test_get_entity_components(bdb):
 
         manual_entity_path = manual_entities_paths[counter]
         
-       
-        manual_entity_componentens_names= [f.name for f in os.scandir(manual_entity_path) if f.is_dir() ]
-        manual_entity_componentens_paths= [f.path for f in os.scandir(manual_entity_path) if f.is_dir() ]
+        comp_regex = r'-([a-zA-Z]{1,2}\d{1,5})(?:[^\d].*)?'
+            
+        manual_entity_componentens= [f for f in os.scandir(manual_entity_path) if f.is_dir() and re.match(comp_regex, f.name)]
+        manual_entity_componentens_names= [f.name for f in manual_entity_componentens]
+        manual_entity_componentens_paths= [f.path for f in manual_entity_componentens]
         
         print('Name of bdb: {}'.format(entity_name))
         print('Name taken manually: {}'.format(os.path.basename(manual_entity_path)))
