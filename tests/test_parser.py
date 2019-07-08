@@ -85,6 +85,20 @@ def test_parser_basic():
     _test_parser_type(BUIDParser(ignore_unknown=False, mode = 'last'), 'DP')
     _test_parser_type(BUIDParser(ignore_unknown=True, mode = 'unique'), None)
 
+              
+    def _test_parser_restriction(buid_p, result=None):
+        s = 'XasfwX_sl293_sl333_dp241_sl333_dp241_Y_EE0215'
+        buid = buid_p(s)
+        print(f'{s} --> {buid}')
+        assert(buid == result)
+
+    _test_parser_restriction(BUIDParser(ignore_unknown=True, mode = 'all', allowed_types=['SL']), ['SL0293', 'SL0333', 'SL0333',])
+    _test_parser_restriction(BUIDParser(ignore_unknown=True, mode = 'all', allowed_types=['EE']), ['EE0215'])
+    _test_parser_restriction(BUIDParser(mode = 'all', allowed_types=['SL']), ['SL0293', 'SL0333', 'SL0333',])
+    _test_parser_restriction(BUIDParser(mode = 'all', allowed_types=['EE']), ['EE0215'])
+    
+    with pytest.raises(ValueError) as err:
+        _test_parser_restriction(BUIDParser(ignore_unknown=False, mode = 'all', allowed_types=['EE']), ['EE0215'])
 
 
 # def test_parser_extended(bdb):

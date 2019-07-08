@@ -18,9 +18,13 @@ from pathlib import Path
 import shutil
 import filecmp
 
+import functools
+
 from enum import Enum, IntEnum
 
-__all__ = ['open_in_explorer', 'FileManager', 'FileNameAnalyzer', 'copy_files_with_jupyter_button', 'serialize_to_file', 'RevisionFile']
+from .parser import *
+
+__all__ = ['open_in_explorer', 'FileManager', 'FileNameAnalyzer', 'copy_files_with_jupyter_button', 'serialize_to_file', 'RevisionFile', 'ClassFileSerializer']
 
 # from chunked_object import *
 # from message_dump import *
@@ -101,7 +105,7 @@ class FileManager(object):
         new_paths = self.secondary_data_paths + secondary_data_paths
         self.set_secondary_data_paths(new_paths)       
             
-    def _get_files(self, file_glob, paths):
+    def _get_files(self, file_glob, paths, directories_only=False):
         from itertools import product
         
         if not isinstance(file_glob, list):
@@ -110,6 +114,9 @@ class FileManager(object):
         fns = []
         for p, g in product(paths, file_glob):
             fns += list(p.glob(g))
+
+        if directories_only:
+            fns = [fn for fn in fns if fn.is_dir()]
             
         if self.auto_string: 
             fns = [str(f) for f in fns]
@@ -119,8 +126,11 @@ class FileManager(object):
         
         return fns
 
-    def get_files(self, file_glob):
-        return self._get_files(file_glob, self.raw_path)   
+    def get_files(self, file_glob, directories_only=False):
+        return self._get_files(file_glob, self.raw_path, directories_only=directories_only)   
+
+    def get_directories(self, dir_glob):
+        return self._get_files(dir_glob, self.raw_path, directories_only=True)   
     
     def get_export_files(self, file_glob):
         all_secondary_paths = [self.export_path] + self.secondary_data_paths
@@ -182,11 +192,13 @@ class FileNameAnalyzer(object):
         self.logger = module_logger
         self.last_filename = ''
         
-    def add_regex(self, regex, param_name, numeric = False, required = True):
+    def add_regex(self, regex, param_name, numeric = False, required = True, converter=None):
         regex_entry = {'regex': regex, 
                        'param_name': param_name, 
                        'numeric': numeric, 
-                       'required': required}
+                       'required': required,
+                       'converter': converter,
+                       }
         self.regex_entries.append(regex_entry)
         pass
 
@@ -222,7 +234,10 @@ class FileNameAnalyzer(object):
                     else:
                         results = results_name_only                        
                         self.logger.warn('Parameter (%s) ambiguous in the filename! This might be a problem. Using first of %s.' % (r['param_name'], str(results)))                   
-                    
+
+                if r['converter']:
+                    results[0] = r['converter'](results[0])
+
                 if r['numeric']:
                     info[r['param_name']] = float(results[0])
                 else:
@@ -264,8 +279,9 @@ class FileNameAnalyzer(object):
         
         
 def copy_files_with_jupyter_button(fns, target_path, dry_run=False, show_button=True):
+    from ipywidgets import widgets
+
     def copy_files(button):
-        from ipywidgets import widgets
         import shutil
 
         progress = widgets.IntProgress(min=0, max=len(fns), value=0, description='Copying...')
@@ -383,6 +399,203 @@ class RevisionFile(object):
 
 
 
+
+class ClassFileSerializer(object):
+
+    cls_registry = {}
+    filename_pattern_registry = {}
+
+    cls=None
+
+    base_file_identifier=None
+    prepend_buid=False
+    prefix='' 
+    suffix=''
+    serialize_method = 'serialize'
+    deserialize_classmethod = 'deserialize'
+    allow_parent=False
+    binary=False
+
+    def __init__(self, base_file_identifier=None, 
+                      prepend_buid=False, 
+                      prefix='', suffix='',
+                      serialize_method = 'serialize',
+                      deserialize_classmethod = 'deserialize',
+                      allow_parent=False,
+                      binary=False,):
+
+        self.base_file_identifier = base_file_identifier
+        self.prepend_buid = prepend_buid
+        self.prefix = prefix
+        self.suffix = suffix
+        self.serialize_method = serialize_method
+        self.deserialize_classmethod = deserialize_classmethod
+        self.allow_parent = allow_parent
+        self.binary = binary
+
+
+    @classmethod
+    def get_class_from_filename(cls, fn):
+        found_cls = None
+
+        for class_name, cfs in cls.cls_registry.items():
+            if cfs.match_filename(fn):
+                found_cls = cfs.cls
+                module_logger.debug(f'Found class {found_cls.__qualname__} for file {Path(fn).name}')
+        
+        return found_cls
+
+
+    def set_class(self, cls):        
+        self.cls = cls
+
+        if self.prefix or self.suffix or self.base_file_identifier:
+            ClassFileSerializer.cls_registry[cls.__qualname__] = self
+            ClassFileSerializer.filename_pattern_registry[self.get_filename_regex()] = self
+
+    def get_filename_regex(self, file_identifier=None):
+        rg = r''
+        if self.prepend_buid:
+            rg += BUIDParser.buid_comp_regex.pattern+'_'
+        if self.prefix:
+            rg += self.prefix
+        if file_identifier:
+            rg += file_identifier
+        elif self.base_file_identifier:
+            rg += self.base_file_identifier
+        else:
+            rg += '(.*)'
+
+        if self.suffix:
+            rg += self.suffix
+
+        return rg
+
+    def match_filename(self, fn, file_identifier=None):
+        rg = self.get_filename_regex(file_identifier=file_identifier)
+        return re.match(rg, Path(fn).name)
+
+
+
+    def get_serialization_filename_from_entity(self, entity, file_identifier=None):
+        if file_identifier is None:
+            file_identifier = self.base_file_identifier
+
+        if file_identifier is None:
+            raise ValueError('No file_identifier given. Either set base_file_identifier in serialize_to_file'
+                                ', or provide file_identifier to this function call.')
+
+        export_prefix = f'{entity.buid_with_component}_' if self.prepend_buid else ''
+        export_prefix += self.prefix
+
+        fm = entity.make_file_manager(export_prefix=export_prefix)
+
+        filename = fm.make_export_file_name(file_identifier)
+
+        if self.suffix:
+            filename += self.suffix
+
+        return filename
+
+
+    def save_to_file(self, obj, filename, override=False, revision=True, use_suffix=False):
+        if self.serialize_method is None:
+            module_logger.error(f'Object from class {obj.__class__.__qualname__} cannot be deserialized!')
+            return None
+
+        serialize = getattr(obj, self.serialize_method)
+        serial_data = serialize() 
+
+        if use_suffix:
+            filename += self.suffix
+
+        if revision:
+            revision_file = RevisionFile(base_name=filename)
+            revision_file.create_new_revision()
+
+        if Path(filename).exists() and not override:
+            module_logger.warning('File already exists. Skip. (consider override=True).')
+        else:
+            serial_data_binary = serial_data if self.binary else serial_data.encode()                    
+
+            with open(filename, 'wb') as f:
+                f.write(serial_data_binary)
+                module_logger.info(f'Config written to {filename}')
+
+            if revision:
+                revision_file.reduce_last_revision()        
+
+
+    def load_raw_from_file(self, filename):
+        with open(filename, 'rb') as f:
+            file_data_binary = f.read()
+            file_data = file_data_binary if self.binary else file_data_binary.decode()
+        
+        return file_data
+
+
+    def load_from_file(self, filename, default=None, fail_to_default=False):           
+        if self.deserialize_classmethod is None:
+            module_logger.error(f'Class {self.cls.__qualname__} cannot be deserialized!')
+            return None
+
+        deserialize = getattr(self.cls, self.deserialize_classmethod)
+        
+        try:
+            file_data = self.load_raw_from_file(filename)
+
+        except FileNotFoundError:
+            if default is None and not fail_to_default:
+                raise
+            else:
+                module_logger.info(f'Using default, because file not found ({filename}).')
+                return default
+
+        try:
+            return deserialize(file_data)
+        except BaseException as e:
+            raise RuntimeError(f'Deserialization failed for file {filename}')
+
+
+    def save_to_entity(self, obj, entity, file_identifier=None, override=False, revision=True, open_in_explorer=False):
+        filename = self.cls.get_serialization_filename(entity, file_identifier=file_identifier)
+        self.save_to_file(obj, filename, override=override, revision=revision)            
+        if open_in_explorer:
+            self.open_in_explorer(entity)
+        return filename
+
+
+    def load_from_entity(self, entity, file_identifier=None, allow_parent=None, force_parent=False, default=None, fail_to_default=False):           
+        if entity is None and fail_to_default:
+            return default
+            
+        if allow_parent is None:
+            allow_parent = self.allow_parent
+
+        if force_parent:
+            entity = entity.get_parent_entity()
+
+        try:
+            filename = self.cls.get_serialization_filename(entity, file_identifier=file_identifier)
+            load_parent = not Path(filename).exists()
+        except FileNotFoundError:
+            filename = None
+            load_parent = True
+
+        if load_parent and allow_parent:
+            filename = self.cls.get_serialization_filename(entity.get_parent_entity(), 
+                                                        file_identifier=file_identifier)
+
+        return self.load_from_file(filename, default=default, fail_to_default=fail_to_default)
+
+
+    def _open_in_explorer(self, entity, file_identifier=None):
+        global open_in_explorer
+        filename = self.get_serialization_filename_from_entity(entity, file_identifier=file_identifier)
+        open_in_explorer(filename)            
+
+    
+
 def serialize_to_file(base_file_identifier=None, 
                       prepend_buid=False, 
                       prefix='', suffix='',
@@ -395,118 +608,26 @@ def serialize_to_file(base_file_identifier=None,
     Serialization is performed by class methods .serialize() and .deserialize().
     '''
 
-    default_allow_parent = allow_parent
+    file_serializer = ClassFileSerializer(base_file_identifier=base_file_identifier, 
+                      prepend_buid=prepend_buid, 
+                      prefix=prefix, suffix=suffix,
+                      serialize_method = serialize_method,
+                      deserialize_classmethod = deserialize_classmethod,
+                      allow_parent=allow_parent,
+                      binary=binary)
 
     def decorate_class(cls):
 
-        def _open_in_explorer(self, entity, file_identifier=None):
-            global open_in_explorer
-            filename = cls.get_serialization_filename(entity, file_identifier=file_identifier)
-            open_in_explorer(filename)            
+        file_serializer.set_class(cls)
 
-        def get_serialization_filename(entity, file_identifier=None):
-            if file_identifier is None:
-                file_identifier = base_file_identifier
+        cls.file_serializer = file_serializer
 
-            if file_identifier is None:
-                raise ValueError('No file_identifier given. Either set base_file_identifier in serialize_to_file'
-                                 ', or provide file_identifier to this function call.')
-
-            export_prefix = f'{entity.buid_with_component}_' if prepend_buid else ''
-            export_prefix += prefix
-
-            fm = entity.make_file_manager(export_prefix=export_prefix)
-
-            filename = fm.make_export_file_name(file_identifier)
-
-            if suffix:
-                filename += suffix
-
-            return filename
-
-        def save_to_file(self, filename, override=False, revision=True):
-            if serialize_method is None:
-                module_logger.error(f'Object from class {self.__class__.__qualname__} cannot be deserialized!')
-                return None
-
-            serialize = getattr(self, serialize_method)
-            serial_data = serialize() 
-            
-            if revision:
-                revision_file = RevisionFile(base_name=filename)
-                revision_file.create_new_revision()
-
-            if Path(filename).exists() and not override:
-                module_logger.warning('File already exists. Skip. (consider override=True).')
-            else:
-                serial_data_binary = serial_data if binary else serial_data.encode()                    
-
-                with open(filename, 'wb') as f:
-                    f.write(serial_data_binary)
-                    module_logger.info(f'Config written to {filename}')
-
-                if revision:
-                    revision_file.reduce_last_revision()
-        
-        def save_to_entity(self, entity, file_identifier=None, override=False, revision=True, open_in_explorer=False):
-            filename = cls.get_serialization_filename(entity, file_identifier=file_identifier)
-            self.save_to_file(filename, override=override, revision=revision)            
-            if open_in_explorer:
-                self.open_in_explorer(entity)
-            return filename
-
-        def load_from_file(filename, default=None):
-            if deserialize_classmethod is None:
-                module_logger.error(f'Class {cls.__qualname__} cannot be deserialized!')
-                return None
-
-            deserialize = getattr(cls, deserialize_classmethod)
-            
-            try:
-                with open(filename, 'rb') as f:
-                    file_data_binary = f.read()
-                    file_data = file_data_binary if binary else file_data_binary.decode()
-
-            except FileNotFoundError:
-                if default is None:
-                    raise
-                else:
-                    module_logger.info(f'Using default, because file not found ({filename}).')
-                    return default
-
-            try:
-                return deserialize(file_data)
-            except BaseException as e:
-                raise RuntimeError(f'Deserialization failed for file {filename}')
-
-
-
-        def load_from_entity(entity, file_identifier=None, allow_parent=None, force_parent=False, default=None):
-            if allow_parent is None:
-                allow_parent = default_allow_parent
-
-            if force_parent:
-                entity = entity.get_parent_entity()
-
-            try:
-                filename = cls.get_serialization_filename(entity, file_identifier=file_identifier)
-                load_parent = not Path(filename).exists()
-            except FileNotFoundError:
-                filename = None
-                load_parent = True
-
-            if load_parent and allow_parent:
-                filename = cls.get_serialization_filename(entity.get_parent_entity(), 
-                                                          file_identifier=file_identifier)
-
-            return cls.load_from_file(filename, default=default)
-
-        cls.get_serialization_filename = get_serialization_filename
-        cls.save_to_file = save_to_file
-        cls.save_to_entity = save_to_entity
-        cls.load_from_file = load_from_file
-        cls.load_from_entity = load_from_entity
-        cls.open_in_explorer = _open_in_explorer
+        cls.get_serialization_filename = functools.partialmethod(file_serializer.get_serialization_filename_from_entity)
+        cls.save_to_file = functools.partialmethod(file_serializer.save_to_file)
+        cls.save_to_entity = functools.partialmethod(file_serializer.save_to_entity)
+        cls.load_from_file = functools.partialmethod(file_serializer.load_from_file)
+        cls.load_from_entity = functools.partialmethod(file_serializer.load_from_entity)
+        cls.open_in_explorer = functools.partialmethod(file_serializer._open_in_explorer)
 
         return cls
        
