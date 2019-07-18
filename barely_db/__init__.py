@@ -182,7 +182,25 @@ class BarelyDB(object):
                 filename = filename.replace("/","\\")
 
         return filename
-        
+
+    def relative_file(self, filename):
+        filename = Path(self.resolve_file(filename))
+        file_rel = Path(filename).relative_to(self.base_path).as_posix()
+        return str(file_rel)
+
+    def absolute_file(self, file_rel):
+        file_abs = str(self.base_path.joinpath(file_rel).resolve().absolute())
+
+        # this is for safety to make sure that the path is really relative to base_path
+        try:
+            file_rel_recover = self.relative_file(file_abs)
+            file_abs_recover = str(self.base_path.joinpath(file_rel_recover).resolve().absolute())
+        except ValueError:
+            raise ValueError(f'Given relative file name is not result in a file in the given database! ({file_rel})')
+
+        return str(file_abs_recover)
+
+
     def get_code_paths(self, depth=1, add_to_sys_path=False, relative_bdb_path=True):              
         
         code_path_valid = False
