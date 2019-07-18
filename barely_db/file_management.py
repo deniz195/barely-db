@@ -509,6 +509,12 @@ class ClassFileSerializer(object):
         if use_suffix:
             filename += self.suffix
 
+        self.save_raw_to_file(serial_data, filename, override=override, revision=revision)
+
+
+    def save_raw_to_file(self, raw_data, filename, override=False, revision=True):
+        serial_data = raw_data
+
         if revision:
             revision_file = RevisionFile(base_name=filename)
             revision_file.create_new_revision()
@@ -524,6 +530,7 @@ class ClassFileSerializer(object):
 
             if revision:
                 revision_file.reduce_last_revision()        
+
 
 
     def load_raw_from_file(self, filename):
