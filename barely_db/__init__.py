@@ -820,6 +820,12 @@ class BarelyDBEntity(object):
         return self.bdb.query_properties(self.buid, *args, **kwds)
     
 
+    def has_object(self, object_class):
+        filename = object_class.file_serializer.resolve_file_from_entity(self)
+        if filename is None:
+            return False
+        else:
+            return Path(filename).exists()
 
     def load_object(self, object_class, default=None):
         try:

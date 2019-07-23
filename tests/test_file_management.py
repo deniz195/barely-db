@@ -53,6 +53,9 @@ def add_yaml_serialize():
     
     return decorate_class
 
+
+
+
 def test_serialize_to_file(bdb):
 
     @add_yaml_serialize()
@@ -70,7 +73,7 @@ def test_serialize_to_file(bdb):
     print(base_path)
 
     fm = test_ent.make_file_manager()
-    all_fns = fm.get_files('*')
+    all_fns = fm.get_files('*', files_only=True)
     print(f'removing {all_fns}')
     for fn in all_fns:
         os.remove(fn)
@@ -102,13 +105,13 @@ def test_serialize_to_file(bdb):
     assert(Path(fn).exists())
 
 
-    @serialize_to_file('some_data.yaml')
+    @serialize_to_file('some_data_X2.yaml')
     class X2(Xbase):
         pass
 
     x2 = X2()
     fn = x2.save_to_entity(test_ent)
-    assert('some_data.yaml' == Path(fn).name)
+    assert('some_data_X2.yaml' == Path(fn).name)
     assert(x2.file_serializer.match_filename(fn, ))
     assert(Path(fn).exists())
 
@@ -145,3 +148,24 @@ def test_serialize_to_file(bdb):
 
 
 
+
+    ## Test load
+    @serialize_to_file('some_data_X5.yaml', prepend_buid=True)
+    class X5(Xbase):
+        pass
+
+    @serialize_to_file('some_data_X6.yaml', prepend_buid=True)
+    class X6(Xbase):
+        pass
+
+    x5 = X5()
+    fn = x5.save_to_entity(test_ent)
+    assert('WB9001-Y9_some_data_X5.yaml' == Path(fn).name)
+    assert(x5.file_serializer.match_filename(fn))
+    assert(Path(fn).exists())
+
+    assert(test_ent.has_object(X5))
+    assert(not test_ent.has_object(X6))
+    
+    x5_loaded = test_ent.load_object(X5)
+    assert(x5_loaded.serialize() == x5.serialize())

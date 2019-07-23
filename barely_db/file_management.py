@@ -105,7 +105,7 @@ class FileManager(object):
         new_paths = self.secondary_data_paths + secondary_data_paths
         self.set_secondary_data_paths(new_paths)       
             
-    def _get_files(self, file_glob, paths, directories_only=False):
+    def _get_files(self, file_glob, paths, directories_only=False, files_only=False):
         from itertools import product
         
         if not isinstance(file_glob, list):
@@ -117,6 +117,9 @@ class FileManager(object):
 
         if directories_only:
             fns = [fn for fn in fns if fn.is_dir()]
+        
+        if files_only:
+            fns = [fn for fn in fns if not fn.is_dir()]
             
         if self.auto_string: 
             fns = [str(f) for f in fns]
@@ -126,8 +129,9 @@ class FileManager(object):
         
         return fns
 
-    def get_files(self, file_glob, directories_only=False):
-        return self._get_files(file_glob, self.raw_path, directories_only=directories_only)   
+    def get_files(self, file_glob, directories_only=False, files_only=False):
+        return self._get_files(file_glob, self.raw_path, directories_only=directories_only,
+                                                         files_only=files_only)   
 
     def get_directories(self, dir_glob):
         return self._get_files(dir_glob, self.raw_path, directories_only=True)   
@@ -572,10 +576,10 @@ class ClassFileSerializer(object):
         return filename
 
 
-    def load_from_entity(self, entity, file_identifier=None, allow_parent=None, force_parent=False, default=None, fail_to_default=False):           
-        if entity is None and fail_to_default:
-            return default
-            
+    def resolve_file_from_entity(self, entity, file_identifier=None, allow_parent=None, force_parent=False):        
+        if entity is None: 
+            return None
+
         if allow_parent is None:
             allow_parent = self.allow_parent
 
@@ -592,6 +596,15 @@ class ClassFileSerializer(object):
         if load_parent and allow_parent:
             filename = self.cls.get_serialization_filename(entity.get_parent_entity(), 
                                                         file_identifier=file_identifier)
+        
+        return filename
+
+
+    def load_from_entity(self, entity, file_identifier=None, allow_parent=None, force_parent=False, default=None, fail_to_default=False):           
+        if entity is None and fail_to_default:
+            return default
+
+        filename = self.resolve_file_from_entity(entity, file_identifier=file_identifier, allow_parent=allow_parent, force_parent=force_parent)
 
         return self.load_from_file(filename, default=default, fail_to_default=fail_to_default)
 
