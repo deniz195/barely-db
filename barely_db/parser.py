@@ -162,13 +162,13 @@ class BUIDParser(object):
         if len(res) == 0:
             if self.mode in ['first', 'last', 'unique']:
                 if self.warn_empty:
-                    module_logger.warn(f'No valid buid found in {buid_str}')
+                    module_logger.warning(f'No valid buid found in {buid_str}')
                 return None
 
         elif len(res) > 1:
             if self.mode in ['unique']:
                 res_formated = [self.format_buid_from_regex(r) for r in res]
-                module_logger.warn(f'More than one valid buid found in {buid_str} ({res_formated}!')
+                module_logger.warning(f'More than one valid buid found in {buid_str} ({res_formated}!')
                 return None
 
         if self.mode in ['first', 'last', 'unique']:
@@ -190,7 +190,7 @@ class BUIDParser(object):
             
         if self.ignore_unknown is None:
             if not self.is_known_buid_type(regex_result):
-                module_logger.warn(f'Unknown buid type {buid_type} in {repr(regex_result)}!')
+                module_logger.warning(f'Unknown buid type {buid_type} in {repr(regex_result)}!')
 
         return '{}{:04d}{}'.format(buid_type, buid_id, comp_id)
 
@@ -199,7 +199,7 @@ class BUIDParser(object):
             comp_id = f'{regex_result[2]}'
         else:
             comp_id = ''
-            module_logger.warn(f'No buid component found when requested!')
+            module_logger.warning(f'No buid component found when requested!')
             
         return f'{comp_id}'
 

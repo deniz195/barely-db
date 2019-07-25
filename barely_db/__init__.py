@@ -329,7 +329,7 @@ class BarelyDB(object):
 
     # #### Deprecated. Replaced by get_entity_path
     # def entity_path(self, buid, absolute=False):
-    #     self.logger.warn('entity_path is deprecated! use get_entity_path instead!')
+    #     self.logger.warning('entity_path is deprecated! use get_entity_path instead!')
     #     return self.get_entity_path(buid, absolute=absolute)
 
 
@@ -391,7 +391,7 @@ class BarelyDB(object):
     
     # #### Deprecated. Replaced by get_entity_path
     # def entity_files(self, buid, glob, must_contain_buid = False, output_as_str=True):
-    #     self.logger.warn('entity_files is deprecated! use get_entity_files instead!')
+    #     self.logger.warning('entity_files is deprecated! use get_entity_files instead!')
     #     return self.get_entity_files(buid, glob, must_contain_buid=must_contain_buid, output_as_str=output_as_str)
 
     def _get_files(self, buid, path, glob, must_contain_buid = False, output_as_str=True):
@@ -453,11 +453,11 @@ class BarelyDB(object):
                     new_property_data['property_file'] = fn.name
 
                     if 'buid' not in new_property_data:
-                        self.logger.warn(f'Property file has no buid specification {fn.name}!')
+                        self.logger.warning(f'Property file has no buid specification {fn.name}!')
                         new_property_data['buid'] = BUID.INVALID
 
                     if 'source' not in new_property_data:
-                        self.logger.warn(f'Property file has no source specification {fn.name}!')
+                        self.logger.warning(f'Property file has no source specification {fn.name}!')
                         new_property_data['source'] = 'Unknown source!'
 
                     properties[fn.name] = new_property_data
@@ -521,7 +521,7 @@ class BarelyDB(object):
 
         if len(result) == 0:
             if warn_empty:
-                self.logger.warn(f'No value for {prop} in entity {buid}!')
+                self.logger.warning(f'No value for {prop} in entity {buid}!')
             return None
         elif len(result) == 1:
             return make_item(result[0])
@@ -531,22 +531,22 @@ class BarelyDB(object):
             selector = [f'("{p}" in @.property_file)' for p in self.preferred_property_files]
             selector = ' or '.join(selector)
             selector = f'[{selector}]' if selector else ''
-            # self.logger.warn(str(selector))
+            # self.logger.warning(str(selector))
 
             tree = objectpath.Tree(result)
             result_amb = list(tree.execute(f'$..*{selector}'))            
 
             if len(result_amb) == 0:
-                self.logger.warn(f'Multiple sources for {prop} in entity {buid}! Filtering with preferred files did not yield a result. Please, refine this query adding a property file to preferred_property_files! Found sources follow below:')
+                self.logger.warning(f'Multiple sources for {prop} in entity {buid}! Filtering with preferred files did not yield a result. Please, refine this query adding a property file to preferred_property_files! Found sources follow below:')
                 for res in result:
-                    self.logger.warn(json.dumps(res, indent=4))
+                    self.logger.warning(json.dumps(res, indent=4))
                 return None
             elif (len(result_amb) == 1):
                 return make_item(result_amb[0])
             elif (len(result_amb) > 1):
-                self.logger.warn(f'Multiple sources for {prop} in entity {buid}, even after filtering with preferred_property_files! Please, remove entries from preferred_property_files to lift this ambiguity! Found sources follow below:')
+                self.logger.warning(f'Multiple sources for {prop} in entity {buid}, even after filtering with preferred_property_files! Please, remove entries from preferred_property_files to lift this ambiguity! Found sources follow below:')
                 for res in result_amb:
-                    self.logger.warn(json.dumps(res, indent=4))
+                    self.logger.warning(json.dumps(res, indent=4))
                 return None
         
         # shouldnt arrive here
@@ -723,7 +723,7 @@ class BarelyDBEntity(object):
         
         existing_path = self.get_component_paths().get(component, None)
         if existing_path is not None:
-            self.logger.warn(f'Component path already exists! {str(existing_path)}')
+            self.logger.warning(f'Component path already exists! {str(existing_path)}')
             return None
                 
         base_bath = self.bdb.get_entity_path(self.buid)

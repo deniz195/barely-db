@@ -156,7 +156,7 @@ class FileManager(object):
         fn_val = self._get_valid_filename(fn)
         if fn_val != fn:
             fn = fn_val
-            module_logger.warn('Filename has been regularized! (%s)' % fn)
+            module_logger.warning('Filename has been regularized! (%s)' % fn)
 
         exp_fn = Path(self.export_path, fn)
         if absolute:
@@ -223,10 +223,10 @@ class FileNameAnalyzer(object):
                         
             if len(results) == 0:
                 if r['required']:
-                    self.logger.warn('Required parameter (%s) not found!' % r['param_name'])
+                    self.logger.warning('Required parameter (%s) not found!' % r['param_name'])
             elif len(results) >= 1:
                 if len(results) > 1:
-                    # self.logger.warn('Parameter (%s) ambiguous! Using first of %s.' % (r['param_name'], str(results)))
+                    # self.logger.warning('Parameter (%s) ambiguous! Using first of %s.' % (r['param_name'], str(results)))
                     # see if we only look in the filename itself we get uniqueness
                     results_name_only = re.findall(r['regex'], Path(filename).name)
                     results_name_only = list(set(results_name_only)) # remove dupplicates!
@@ -234,10 +234,10 @@ class FileNameAnalyzer(object):
                     if len(results_name_only) == 1:
                         results = results_name_only
                     elif len(results_name_only) == 0:
-                        self.logger.warn('Parameter (%s) ambiguous in the path, with no info in the filename! This might be a problem. Using first of %s.' % (r['param_name'], str(results)))
+                        self.logger.warning('Parameter (%s) ambiguous in the path, with no info in the filename! This might be a problem. Using first of %s.' % (r['param_name'], str(results)))
                     else:
                         results = results_name_only                        
-                        self.logger.warn('Parameter (%s) ambiguous in the filename! This might be a problem. Using first of %s.' % (r['param_name'], str(results)))                   
+                        self.logger.warning('Parameter (%s) ambiguous in the filename! This might be a problem. Using first of %s.' % (r['param_name'], str(results)))                   
 
                 if r['converter']:
                     results[0] = r['converter'](results[0])
