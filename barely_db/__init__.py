@@ -107,14 +107,18 @@ class BarelyDB(object):
         'G:\\Shared drives\\Database',
         '/Volumes/GoogleDrive/Team Drives/Database',
         '/Volumes/GoogleDrive/Teamablagen/Database',
-        '/Volumes/GoogleDrive/Geteilte Ablagen/Database']      
+        '/Volumes/GoogleDrive/Geteilte Ablagen/Database',
+        'G:\\Geteilte Ablagen\\Database',
+        ]      
 
     known_bases = [\
         'G:\\My Drive\\Battrion_AG\\DATABASE\\',
         'G:\\Team Drives\\Database\\',
         'G:\\Shared drives\\Database\\',
+        'G:\\Geteilte Ablagen\\Database\\',
         'barelydb://',
-        'barely-db://',]
+        'barely-db://',
+        ]
 
     base_path = None
     property_file_glob = '*.property.json'
@@ -136,6 +140,9 @@ class BarelyDB(object):
                     base_path = def_base_path
                     self.logger.info(f'Using default path {base_path}')
                     break
+
+        if base_path is None:
+            raise RuntimeError('Could not automatically determine base path of database!')
 
         self.base_path = Path(base_path)
         self.base_path = self.base_path.resolve().absolute()
