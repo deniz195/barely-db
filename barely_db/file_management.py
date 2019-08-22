@@ -553,6 +553,9 @@ class ClassFileSerializer(object):
         deserialize = getattr(self.cls, self.deserialize_classmethod)
         
         try:
+            if filename is None:
+                raise FileNotFoundError('(Filename cannot be None!)')
+            
             file_data = self.load_raw_from_file(filename)
 
         except FileNotFoundError:
