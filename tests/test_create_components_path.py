@@ -42,8 +42,9 @@ def check_folder_contains_component(folder_path, component_name):
 
 def test_create_components(bdb):   
     ent = bdb.get_entity('WB3001')
-    with pytest.deprecated_call():
-        ent.create_component_path('P1', path_comment='some_component')
+    # with pytest.deprecated_call():
+    #     ent.create_component_path('P1', path_comment='some_component')
+    ent.create_component_path('P1', path_comment='some_component')
 
     component_name ='T1'
     component_comment = 'some_component'
