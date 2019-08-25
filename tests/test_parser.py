@@ -101,6 +101,14 @@ def test_parser_basic():
         _test_parser_restriction(BUIDParser(ignore_unknown=False, mode = 'all', allowed_types=['EE']), ['EE0215'])
 
 
+def test_format(bdb):
+    buid_p = BUIDParser(ignore_unknown=True, mode = 'unique')
+
+    assert buid_p.format('WB', 99, 'P1') == 'WB0099-P1'
+    assert buid_p.format('WB', 99) == 'WB0099'
+    assert buid_p.format('WB', '99') == 'WB0099'
+
+
 # def test_parser_extended(bdb):
     
 #     ent = bdb.get_entity('WB3001')

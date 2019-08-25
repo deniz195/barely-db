@@ -92,46 +92,57 @@ class BUIDParser(object):
     def __call__(self, buid_str):
         return self.parse(buid_str)
 
-    def parse(self, buid_str):        
-        regex = self.buid_comp_regex if self.allow_components else self.buid_regex
+    def _parse(self, buid_str, regex, formatter):
         regex_result = self.find(str(buid_str), regex)
         
         if regex_result is None:
             return None
         
         if self.mode in ['first', 'last', 'unique']:
-            result = self.format_buid_from_regex(regex_result)
+            result = formatter(regex_result)
         else:
-            result = [self.format_buid_from_regex(r) for r in regex_result]
+            result = [formatter(r) for r in regex_result]
             
+        return result
+
+    def parse(self, buid_str):        
+        regex = self.buid_comp_regex if self.allow_components else self.buid_regex
+        result = self._parse(buid_str, regex, self.format_buid_from_regex)
         return result
 
     def parse_component(self, buid_str):        
         regex = self.buid_comp_must_regex
-        regex_result = self.find(str(buid_str), regex)
-        
-        if regex_result is None:
-            return None
-        
-        if self.mode in ['first', 'last', 'unique']:
-            result = self.format_component_from_regex(regex_result)
-        else:
-            result = [self.format_component_from_regex(r) for r in regex_result]
-            
+
+        def format_component_from_regex(regex_result):        
+            if len(regex_result) >= 3 and regex_result[2]:
+                comp_id = f'{regex_result[2]}'
+            else:
+                comp_id = ''
+                module_logger.warning(f'No buid component found when requested!')
+                
+            return f'{comp_id}'
+
+        result = self._parse(buid_str, regex, format_component_from_regex)
         return result
 
     def parse_type(self, buid_str):        
         regex = self.buid_regex
-        regex_result = self.find(str(buid_str), regex)
-        
-        if regex_result is None:
-            return None
-        
-        if self.mode in ['first', 'last', 'unique']:
-            result = self.format_type_from_regex(regex_result)
-        else:
-            result = [self.format_type_from_regex(r) for r in regex_result]
-            
+
+        def format_type(regex_result): 
+            buid_type = regex_result[0].upper()       
+            return f'{buid_type}'
+
+        result = self._parse(buid_str, regex, format_type)
+        return result
+
+    def parse_type_and_uid(self, buid_str):        
+        regex = self.buid_regex
+
+        def format_type_and_uid(regex_result): 
+            buid_type = regex_result[0].upper()       
+            return f'{buid_type}', regex_result[1]
+
+        result = self._parse(buid_str, regex, format_type_and_uid)
         return result
 
     def find(self, buid_str, regex):
@@ -157,8 +168,6 @@ class BUIDParser(object):
         if self.mode in ['last']:
             res.reverse()
     
-#         res = [self.format_buid_from_regex(r) for r in res]
-
         if len(res) == 0:
             if self.mode in ['first', 'last', 'unique']:
                 if self.warn_empty:
@@ -194,18 +203,12 @@ class BUIDParser(object):
 
         return '{}{:04d}{}'.format(buid_type, buid_id, comp_id)
 
-    def format_component_from_regex(self, regex_result, ):        
-        if len(regex_result) >= 3 and regex_result[2]:
-            comp_id = f'{regex_result[2]}'
-        else:
-            comp_id = ''
-            module_logger.warning(f'No buid component found when requested!')
-            
-        return f'{comp_id}'
+    def format(self, buid_type, buid_id, component=None):
+        regex_result = [buid_type, buid_id]
+        if component is not None:
+            regex_result += [component]
+        return self.format_buid_from_regex(regex_result)
 
-    def format_type_from_regex(self, regex_result, ): 
-        buid_type = regex_result[0].upper()       
-        return f'{buid_type}'
 
     def attrib(self, *args, **kwds):
         ''' Creates an attr attribute that parses buids, based on the

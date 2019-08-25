@@ -211,7 +211,8 @@ class BarelyDB(object):
 
 
     def get_code_paths(self, depth=1, add_to_sys_path=False, relative_bdb_path=True):              
-        
+        module_logger.warning('get_code_paths is is deprecated!')
+
         code_path_valid = False
     
         if relative_bdb_path:
@@ -341,6 +342,29 @@ class BarelyDB(object):
     #     self.logger.warning('entity_path is deprecated! use get_entity_path instead!')
     #     return self.get_entity_path(buid, absolute=absolute)
 
+    def get_free_buid(self, start_buid, no_buids = 1, no_free_biuds=None):
+        buid_p = BUIDParser()
+
+        btype, bid = buid_p.parse_type_and_uid(start_buid)
+        bid = int(bid)
+
+        if no_free_biuds is None:
+            no_free_biuds = no_buids
+        
+        found_buids = []
+
+        while bid < 9999:
+            new_buid = buid_p.format(btype, bid)
+            bid += 1
+            if new_buid in self.entities:
+                found_buids = []
+            else:
+                found_buids += [new_buid]
+                if len(found_buids) >= no_free_biuds:
+                    break
+
+        return found_buids[0:no_buids]
+        
 
     def create_entity_path(self, buid, comment, absolute=False, reload=True):       
         buid = self.buid_normalizer(buid)
@@ -435,12 +459,13 @@ class BarelyDB(object):
 
 
     def entity_properties_files(self, buid, output_as_str=True):
+        module_logger.warning('Property interface of BarelyDB is deprecated!')
         buid = self.buid_normalizer(buid)        
         files = self.get_entity_files(buid, self.property_file_glob, output_as_str=output_as_str)
         return list(files)
 
-
     def load_entity_properties(self, buid):
+        module_logger.warning('Property interface of BarelyDB is deprecated!')
         buid = self.buid_normalizer(buid)       
         old_properties = self.entity_properties.get(buid, {})
 
@@ -477,12 +502,14 @@ class BarelyDB(object):
         self.entity_properties[buid] = properties
 
     def reload_entity_properties(self, buid = None):
+        module_logger.warning('Property interface of BarelyDB is deprecated!')
         buids = self.entity_properties.keys() if buid is None else [buid]
         
         for buid in buids:
             self.load_entity_properties(buid)           
 
     def get_entity_properties(self, buid, reload = False):
+        module_logger.warning('Property interface of BarelyDB is deprecated!')
         buid = self.buid_normalizer(buid)       
 
         if (buid not in self.entity_properties) or reload:
@@ -491,17 +518,21 @@ class BarelyDB(object):
         return self.entity_properties[buid]
 
     def get_entity_tree(self, buid):
+        module_logger.warning('Property interface of BarelyDB is deprecated!')
         buid = self.buid_normalizer(buid)       
         tree = objectpath.Tree(self.get_entity_properties(buid))
         return tree
 
     def add_preferred_file(self, prop_file):
+        module_logger.warning('Property interface of BarelyDB is deprecated!')
         self.preferred_property_files = list(set(self.preferred_property_files + [prop_file]))
 
     def clear_preferred_files(self):
+        module_logger.warning('Property interface of BarelyDB is deprecated!')
         self.preferred_property_files = []
 
     def query_property(self, buid, prop, property_file = '', source = '', warn_empty = True):
+        module_logger.warning('Property interface of BarelyDB is deprecated!')
         buid = self.buid_normalizer(buid)       
 
         prop = str(prop)
@@ -575,6 +606,7 @@ class BarelyDB(object):
         Strings are interpreted as the prop parameter to query_properties.
         Dictionaries as keyword parameters to query_properties.
         '''
+        module_logger.warning('Property interface of BarelyDB is deprecated!')
         buid = self.buid_normalizer(buid)       
 
         result = []
@@ -748,7 +780,11 @@ class BarelyDBEntity(object):
         
         return component_path
             
-        
+    def get_free_buid(self, no_buids = 1, no_free_biuds=None):
+        return self.bdb.get_free_buid(self.buid_with_component, 
+                                        no_buids=no_buids, 
+                                        no_free_biuds=no_free_biuds)
+
         
     # ### Deprecated! Replaced by get_entity_path
     # def entity_path(self, absolute=False):
