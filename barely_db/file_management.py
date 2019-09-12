@@ -609,7 +609,19 @@ class ClassFileSerializer(object):
 
         filename = self.resolve_file_from_entity(entity, file_identifier=file_identifier, allow_parent=allow_parent, force_parent=force_parent)
 
-        return self.load_from_file(filename, default=default, fail_to_default=fail_to_default)
+        obj = self.load_from_file(filename, default=default, fail_to_default=fail_to_default)
+
+        # Check if object buid is consistent with entity:
+        try:
+            obj_buid = obj.buid
+            ent_buid = entity.buid_with_component
+            if obj_buid not in ent_buid:
+                module_logger.warning(f'Loaded object ({self.cls.__qualname__}) has different buid ({obj_buid}) then the entity it was loaded from ({ent_buid})! Consider to fix this!')
+
+        except AttributeError as e:
+            pass
+
+        return obj
 
 
     def _open_in_explorer(self, entity, file_identifier=None):
