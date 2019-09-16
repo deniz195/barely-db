@@ -615,7 +615,9 @@ class ClassFileSerializer(object):
         try:
             obj_buid = obj.buid
             ent_buid = entity.buid_with_component
-            if obj_buid not in ent_buid:
+            if obj_buid is None:
+                module_logger.warning(f'Loaded object ({self.cls.__qualname__}) has empty buid, while the entity it was loaded from has not ({ent_buid})! Consider to fix this!')
+            elif obj_buid not in ent_buid:
                 module_logger.warning(f'Loaded object ({self.cls.__qualname__}) has different buid ({obj_buid}) then the entity it was loaded from ({ent_buid})! Consider to fix this!')
 
         except AttributeError as e:
