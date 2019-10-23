@@ -142,7 +142,13 @@ class FileManager(object):
        
     def remove_gdrive_duplicates(self, fns):
         # remove stupid google drive duplicates
-        fns_filtered = [fn for fn in fns if not bool(re.findall(' \(1\)', fn))]
+        fns_filtered = []
+        for fn in fns:
+            if bool(re.findall(' \(1\)', fn)):
+                module_logger.warning(f'Removed google drive dupplicate from result! ({fn})')
+            else:
+                fns_filtered.append(fn)
+
         return fns_filtered.copy()     
 
     def _get_valid_filename(self, fn):
