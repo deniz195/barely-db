@@ -109,6 +109,7 @@ class BarelyDB(object):
         '/Volumes/GoogleDrive/Teamablagen/Database',
         '/Volumes/GoogleDrive/Geteilte Ablagen/Database',
         'G:\\Geteilte Ablagen\\Database',
+        'G:\\Drive partagés\\Database',
         '/home/pi/GoogleDrive/database',
         ]      
 
@@ -117,6 +118,7 @@ class BarelyDB(object):
         'G:\\Team Drives\\Database\\',
         'G:\\Shared drives\\Database\\',
         'G:\\Geteilte Ablagen\\Database\\',
+        'G:\\Drive partagés\\Database\\',
         '/home/pi/GoogleDrive/database/',
         'barelydb://',
         'barely-db://',
