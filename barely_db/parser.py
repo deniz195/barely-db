@@ -45,6 +45,7 @@ class BUIDParser(object):
         'experiment': 'EXP',
         'equipment': 'EQ',
         'manufacturing_orders': 'MO',
+        'product': 'PD',
     }
 
     buid_regex = re.compile(r'([a-zA-Z]{2,3})(\d{2,5})')
