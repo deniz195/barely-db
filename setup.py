@@ -20,6 +20,6 @@ setup(
     url='https://bitbucket.org/battriondev/barely-db.git',
     license=license,
     packages=find_packages(exclude=('tests', 'docs')),
-    install_requires = ['attr', 'cattrs', 'objectpath'],
+    install_requires = ['attrs', 'cattrs', 'objectpath'],
 )
 
