@@ -111,6 +111,7 @@ class BarelyDB(object):
         'G:\\Geteilte Ablagen\\Database',
         'G:\\Drive partagés\\Database',
         '/home/pi/GoogleDrive/database',
+        '/home/jovyan/database',
         ]      
 
     known_bases = [\
@@ -120,6 +121,7 @@ class BarelyDB(object):
         'G:\\Geteilte Ablagen\\Database\\',
         'G:\\Drive partagés\\Database\\',
         '/home/pi/GoogleDrive/database/',
+        '/home/jovyan/database/',
         'barelydb://',
         'barely-db://',
         ]
