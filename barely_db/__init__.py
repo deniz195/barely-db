@@ -876,15 +876,21 @@ class BarelyDBEntity(object):
         else:
             return Path(filename).exists()
 
-    def load_object(self, object_class, default=None):
+    def load_object(self, object_class, default=None, fail_to_exception=False, quiet=False):
         try:
+            obj = None
             obj = object_class.load_from_entity(self)
         except (FileNotFoundError, KeyError):
-            self.logger.warning(f'No {object_class.__qualname__} object found for {self.buid_with_component}!')
-            obj = None
+            error_msg = f'No {object_class.__qualname__} object found for {self.buid_with_component}!'
+            if not quiet:
+                self.logger.warning(error_msg)
+            if fail_to_exception:
+                raise FileNotFoundError(error_msg)
+
 
         if obj is None and default is not None:
-            self.logger.warning(f'Using default object!')
+            if not quiet:
+                self.logger.warning(f'Using default object!')
             obj = copy.copy(default)
             
         return obj
