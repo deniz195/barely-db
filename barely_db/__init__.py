@@ -272,7 +272,7 @@ class BarelyDB(object):
         duplicate_buid = [item for item, count in collections.Counter(found_buid).items() if count > 1]
         duplicate_buid = [i for i in duplicate_buid if i]
         if duplicate_buid:
-            self.logger.warning(f'Following entities have multiple paths/folders: {duplicate_buid}')
+            self.logger.error(f'Following entities have multiple paths/folders: {duplicate_buid}')
 
         self.entity_paths = {buid: path for buid, path in candidates_buid if buid is not None}
         self.logger.info(f'Entities found: {len(self.entity_paths)}')
