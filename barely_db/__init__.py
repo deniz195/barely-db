@@ -214,41 +214,6 @@ class BarelyDB(object):
         return str(file_abs_recover)
 
 
-    def get_code_paths(self, depth=1, add_to_sys_path=False, relative_bdb_path=True):              
-        module_logger.warning('get_code_paths is is deprecated!')
-
-        code_path_valid = False
-    
-        if relative_bdb_path:
-            code_path = ''
-
-            for p in Path(__file__).absolute().parts:
-                code_path = Path(code_path).joinpath(p)
-                if p.find('__code') >= 0:
-                    code_path_valid = True
-                    break
-            
-            if not code_path_valid:
-                self.logger.warning(f'No code path found, relative to bdb code path {code_path}! Using default code in base_path!')
-                    
-
-        if not code_path_valid:
-            code_path = self.base_path.joinpath('__code')
-
-        # sys.path.append(str(bdb_code_path))
-        paths = [code_path]
-        for p in code_path.iterdir():
-            if p.is_dir(): 
-                paths.append(p)
-             
-        paths = [str(p) for p in paths]
-        if add_to_sys_path:
-            for p in paths:
-                sys.path.insert(0, p)
-                
-        return paths
-        
-
     def load_entities(self):
         # candidates = [x.relative_to(self.base_path) for x in self.base_path.iterdir() if x.is_dir()]
         def iter_subdir(path, depth=0):
