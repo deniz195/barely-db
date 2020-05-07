@@ -39,68 +39,6 @@ def _reload_module():
 
 
 @attr.s(frozen=True, kw_only=True)
-class BarelyDBSystemConfig:
-    default_base_path = attr.ib(factory=list, type=typing.List[str])
-
-    # default_base_path = [\
-        # 'G:\\Team Drives\\Database',
-        # 'G:\\Shared drives\\Database',
-        # '/Volumes/GoogleDrive/Team Drives/Database',
-        # '/Volumes/GoogleDrive/Teamablagen/Database',
-        # '/Volumes/GoogleDrive/Geteilte Ablagen/Database',
-        # 'G:\\Geteilte Ablagen\\Database',
-        # 'G:\\Drive partagés\\Database',
-        # '/home/pi/GoogleDrive/database',
-        # '/home/jovyan/database',
-        # ]
-    
-    @classmethod
-    def get_home_directory_file(cls, filename=None):
-        home = Path.home()
-
-        if filename:
-            result = str(home.joinpath(filename))
-        else:
-            result = str(home)
-
-        return result
-
-    @classmethod
-    def get_file(cls):
-        user_config_file = cls.get_home_directory_file(filename='.bdb_system_config.json')
-        return user_config_file
-
-    @staticmethod
-    def resolve_file(base_path):
-        base_path = Path(base_path)
-        
-        if base_path.is_dir():
-            config_file = base_path.joinpath('bdb_config.json')
-        else:
-            config_file = base_path
-
-        return str(config_file)
-
-    def save(self, base_path):
-        config_file = self.resolve_file(base_path)
-
-        self_dict = attr.asdict(self)
-
-        with open(config_file, 'w') as f:
-            json.dump(self_dict, f, indent=4)
-
-    @classmethod
-    def load(cls, base_path):
-        config_file = Path(cls.resolve_file(base_path))
-
-        with open(config_file, 'rb') as f:
-            self_dict = json.load(f)
-
-        return cattr.structure(self_dict, cls)
-
-
-
-@attr.s(frozen=True, kw_only=True)
 class BarelyDBConfig:
 
     path_depth = attr.ib(default=0)
@@ -110,7 +48,7 @@ class BarelyDBConfig:
     buid_types = attr.ib(factory=dict, type=typing.Dict[str, str])
 
     @staticmethod
-    def resolve_file(base_path):
+    def resolve_config_file(base_path):
         base_path = Path(base_path)
         
         if base_path.is_dir():
@@ -121,7 +59,7 @@ class BarelyDBConfig:
         return str(config_file)
 
     def save(self, base_path):
-        config_file = self.resolve_file(base_path)
+        config_file = self.resolve_config_file(base_path)
 
         self_dict = attr.asdict(self)
 
@@ -130,13 +68,13 @@ class BarelyDBConfig:
 
     @classmethod
     def load(cls, base_path):
-        config_file = Path(cls.resolve_file(base_path))
+        config_file = Path(cls.resolve_config_file(base_path))
 
         with open(config_file, 'rb') as f:
             self_dict = json.load(f)
 
-        return cattr.structure(self_dict, cls)
-
+        return cattr.structure(self_dict, cls)            
+            
     @classmethod
     def from_default(cls):
         return cls(
@@ -183,9 +121,10 @@ class BarelyDB(object):
         'G:\\Drive partagés\\Database',
         '/home/pi/GoogleDrive/database',
         '/home/jovyan/database',
-        ]
+        ]      
 
     base_path = None
+
 
     config = None
 
@@ -292,6 +231,7 @@ class BarelyDB(object):
 
         return str(file_abs_recover)
 
+
     def load_entities(self):
         # candidates = [x.relative_to(self.base_path) for x in self.base_path.iterdir() if x.is_dir()]
         def iter_subdir(path, depth=0):
@@ -374,6 +314,7 @@ class BarelyDB(object):
         self.component_paths[base_buid] = component_paths
         
         # self.logger.debug(f'Components for {base_buid} found: {len(component_paths)}')
+        
         
         
     @property
@@ -498,7 +439,8 @@ class BarelyDB(object):
 
 
 class BarelyDBEntity(object):
-
+    file_manager = None
+    
     @classmethod
     def like(cls, entity):
         ''' Copy constructor for subclasses '''
@@ -521,6 +463,7 @@ class BarelyDBEntity(object):
                     allow_components=False)                
 
         self.component = buid_comp_p.parse_component(buid)
+        
 
     def __repr__(self):
         if self.component is None:
@@ -530,6 +473,7 @@ class BarelyDBEntity(object):
     
     def __eq__(self,other):
         return self.buid_with_component == other.buid_with_component
+
 
     @property
     def buid(self):
@@ -566,7 +510,7 @@ class BarelyDBEntity(object):
         os.chdir(current_dir)
         
         return path_resolved
-
+            
     def make_file_manager(self, 
                  component = None,
                  raw_path = './', 
@@ -596,6 +540,7 @@ class BarelyDBEntity(object):
                            ))
         
         return FileManager(**options)
+
 
 
     def create_entity_path(self, path_comment):
@@ -712,6 +657,7 @@ class BarelyDBEntity(object):
             obj = copy.copy(default)
             
         return obj
+
 
     def save_object(self, obj, **kwds):
         filename = obj.save_to_entity(self, **kwds)
