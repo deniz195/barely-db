@@ -28,3 +28,26 @@ def bdb():
     ''' Creates a barelydb instance using the test database. '''
     return bdb_local
 
+
+# Testing customized BUIDParser
+@pytest.fixture(scope="session")
+def CBUIDParser():
+    ''' Creates a customized BUIDParser. '''
+    buid_types = {
+        "slurry": "SL",
+        "web": "WB",
+        "cells": "CL",
+        "electrochemistry": "EE",
+        "rawmaterial": "RM",
+        "experiment": "EXP",
+        "equipment": "EQ",
+        "manufacturing_orders": "MO",
+        "product": "PD",
+        "documents": "DOC"
+    }
+
+    CBUIDParser = barely_db.BUIDParser.create_class(buid_types)
+
+    return CBUIDParser
+
+

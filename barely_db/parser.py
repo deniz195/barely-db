@@ -34,24 +34,20 @@ def _reload_module():
 
 class BUIDParser(object):
     # class variables
-    buid_types = {\
-        'slurry': 'SL',
-        'web': 'WB',
-        'cells': 'CL',
-        'electrochemistry': 'EE',
-        'rawmaterial': 'RM',
-        'experiment': 'EXP',
-        'equipment': 'EQ',
-        'manufacturing_orders': 'MO',
-        'product': 'PD',
-        'documents': 'DOC',
-    }
+    buid_types = {}
 
     buid_regex = re.compile(r'([a-zA-Z]{2,3})(\d{2,5})')
     buid_comp_regex = re.compile(r'([a-zA-Z]{2,3})(\d{2,5})-?([a-zA-Z]{1,2}\d{1,5})?')
     buid_comp_must_regex = re.compile(r'([a-zA-Z]{2,3})(\d{2,5})-([a-zA-Z]{1,2}\d{1,5})')
     
     ignore_unknown = None
+
+    @classmethod
+    def create_class(cls, new_buid_types):
+        class _CustomBUIDParser(BUIDParser):
+            buid_types = new_buid_types
+        
+        return _CustomBUIDParser
 
     def __init__(self, ignore_unknown=None, warn_empty=True, mode = 'unique', 
                        allow_components=True, allowed_types = None):

@@ -22,15 +22,90 @@ from .parser import *
 from .file_management import *
 # from .tools import *
 
-__all__ = ['BUIDParser', 'BarelyDB', 'BarelyDBEntity', 'FileManager', 'FileNameAnalyzer', 'serialize_to_file', 'open_in_explorer', 'ClassFileSerializer']
+__all__ = ['BarelyDB', 'BarelyDBConfig', 'BarelyDBEntity', 'FileManager', 'FileNameAnalyzer', 'serialize_to_file', 'open_in_explorer', 'ClassFileSerializer']
 
 # create logger
 module_logger = logging.getLogger(__name__)
 module_logger.setLevel(logging.DEBUG)
 
 
-from collections import namedtuple
-SourcedItem = namedtuple('SourcedItem', 'name, value, property_file, source')
+# general useful module components
+def _reload_module():
+    import sys
+    import importlib
+    current_module = sys.modules[__name__]
+    module_logger.info('Reloading module %s' % __name__)
+    importlib.reload(current_module)
+
+
+@attr.s(frozen=True, kw_only=True)
+class BarelyDBConfig:
+
+    path_depth = attr.ib(default=0)
+    known_bases = attr.ib(factory=list, type=typing.List[str])
+    ignored_files = attr.ib(factory=list, type=typing.List[str])
+    auto_reload_components = attr.ib(default=None)
+    buid_types = attr.ib(factory=dict, type=typing.Dict[str, str])
+
+    @staticmethod
+    def resolve_config_file(base_path):
+        base_path = Path(base_path)
+        
+        if base_path.is_dir():
+            config_file = base_path.joinpath('bdb_config.json')
+        else:
+            config_file = base_path
+
+        return str(config_file)
+
+    def save(self, base_path):
+        config_file = self.resolve_config_file(base_path)
+
+        self_dict = attr.asdict(self)
+
+        with open(config_file, 'w') as f:
+            json.dump(self_dict, f, indent=4)
+
+    @classmethod
+    def load(cls, base_path):
+        config_file = Path(cls.resolve_config_file(base_path))
+
+        with open(config_file, 'rb') as f:
+            self_dict = json.load(f)
+
+        return cattr.structure(self_dict, cls)            
+            
+    @classmethod
+    def from_default(cls):
+        return cls(
+            path_depth = 1,
+            known_bases = [\
+        'G:\\My Drive\\Battrion_AG\\DATABASE\\',
+        'G:\\Team Drives\\Database\\',
+        'G:\\Shared drives\\Database\\',
+        'G:\\Geteilte Ablagen\\Database\\',
+        'G:\\Drive partagés\\Database\\',
+        '/home/pi/GoogleDrive/database/',
+        '/home/jovyan/database/',
+        'barelydb://',
+        'barely-db://',
+        ],
+        ignored_files = ['desktop.ini'],
+        auto_reload_components = None,
+        buid_types = {\
+            'slurry': 'SL',
+            'web': 'WB',
+            'cells': 'CL',
+            'electrochemistry': 'EE',
+            'rawmaterial': 'RM',
+            'experiment': 'EXP',
+            'equipment': 'EQ',
+            'manufacturing_orders': 'MO',
+            'product': 'PD',
+            'documents': 'DOC',
+        }                   
+                  )
+    
 
 class BarelyDB(object):
 
@@ -48,30 +123,24 @@ class BarelyDB(object):
         '/home/jovyan/database',
         ]      
 
-    known_bases = [\
-        'G:\\My Drive\\Battrion_AG\\DATABASE\\',
-        'G:\\Team Drives\\Database\\',
-        'G:\\Shared drives\\Database\\',
-        'G:\\Geteilte Ablagen\\Database\\',
-        'G:\\Drive partagés\\Database\\',
-        '/home/pi/GoogleDrive/database/',
-        '/home/jovyan/database/',
-        'barelydb://',
-        'barely-db://',
-        ]
-
     base_path = None
+
+
+    config = None
+
     path_depth = None
+    ignored_files = None
+    known_bases = None
+    auto_reload_components = None
 
-    ignored_files = ['desktop.ini']
-
-    buid_types = BUIDParser.buid_types
+    buid_types = None
     buid_type_paths = None
 
-    def __init__(self, base_path=None, path_depth=0, auto_reload_components = True):
+    _MyBUIDParser = None
+
+    def __init__(self, base_path=None, path_depth=None, auto_reload_components = True):
         self.logger = module_logger
 
-        self.path_depth = path_depth
         # if base path is None, check default base path for existance and
         # break at first existing path 
         if base_path is None:
@@ -84,22 +153,33 @@ class BarelyDB(object):
         if base_path is None:
             raise RuntimeError('Could not automatically determine base path of database!')
 
+        self.config = BarelyDBConfig.load(base_path)
+
+        if path_depth:
+            self.logger.warning('Deprecated: path_depth in constructor is deprecated!')
+
+        self.path_depth = self.config.path_depth
+        self.ignored_files = self.config.ignored_files
+        self.known_bases = self.config.known_bases
+        self.auto_reload_components = auto_reload_components
+
         self.base_path = Path(base_path)
         self.base_path = self.base_path.resolve().absolute()
-
-        self.auto_reload_components = auto_reload_components
 
         self.entity_paths = {}
         self.entity_properties = {}
         self.component_paths = {}
 
-        self.buid_normalizer = BUIDParser(ignore_unknown=True, 
+        self.buid_types = self.config.buid_types
+        self._MyBUIDParser = BUIDParser.create_class(self.config.buid_types)
+
+        self.buid_normalizer = self.BUIDParser(ignore_unknown=True, 
                                           mode = 'unique', 
                                           warn_empty = True,
                                           allow_components=False
                                          )
         
-        self.buid_scan = BUIDParser(ignore_unknown=True, 
+        self.buid_scan = self.BUIDParser(ignore_unknown=True, 
                                     mode = 'first', 
                                     warn_empty = False, 
                                     allow_components=False)        
@@ -107,6 +187,10 @@ class BarelyDB(object):
 
         self.known_bases_re = [re.compile(re.escape(b), re.IGNORECASE) for b in self.known_bases]
 
+
+    @property
+    def BUIDParser(self):
+        return self._MyBUIDParser
 
     def resolve_file(self, filename):
         base_path_str = f'{str(self.base_path)}{os.sep}'
@@ -240,7 +324,7 @@ class BarelyDB(object):
 
 
     def get_free_buid(self, start_buid, no_buids = 1, no_free_biuds=None):
-        buid_p = BUIDParser()
+        buid_p = self.BUIDParser()
 
         btype, bid = buid_p.parse_type_and_uid(start_buid)
         bid = int(bid)
@@ -327,7 +411,7 @@ class BarelyDB(object):
             return fn in self.ignored_files
         
         if must_contain_buid:
-            buid_p = BUIDParser(ignore_unknown=False, mode = 'first', warn_empty = False)
+            buid_p = self.BUIDParser(ignore_unknown=False, mode = 'first', warn_empty = False)
             files_sel = [fn for fn in files if (buid_p(fn) == buid)]
             files = files_sel
 
@@ -365,15 +449,16 @@ class BarelyDBEntity(object):
 
     def __init__(self, buid, parent_bdb):       
         self.logger = module_logger
-        
-        buid_p = BUIDParser(ignore_unknown=False, 
+
+        self._bdb = parent_bdb
+
+        buid_p = self.bdb.BUIDParser(ignore_unknown=False, 
                     mode = 'first', 
                     warn_empty = True, 
                     allow_components=False)            
         self._buid = buid_p(buid)
-        self._bdb = parent_bdb
 
-        buid_comp_p = BUIDParser(ignore_unknown=False, 
+        buid_comp_p = self.bdb.BUIDParser(ignore_unknown=False, 
                     mode = 'first', 
                     warn_empty = False, 
                     allow_components=False)                
@@ -535,7 +620,7 @@ class BarelyDBEntity(object):
             return fn in self.ignored_files
         
         if must_contain_buid:
-            buid_p = BUIDParser(ignore_unknown=False, mode = 'first', warn_empty = False)
+            buid_p = self.bdb.BUIDParser(ignore_unknown=False, mode = 'first', warn_empty = False)
             files_sel = [fn for fn in files if (buid_p(fn) == buid)]
             files = files_sel
 
