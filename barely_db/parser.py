@@ -5,8 +5,6 @@ import attr
 import cattr
 
 import datetime
-# import numpy as np
-# import pandas as pd
 import sys
 import os
 import copy

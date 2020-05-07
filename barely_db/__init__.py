@@ -4,22 +4,18 @@ import typing
 import attr
 import cattr
 
+
 import datetime
-# import numpy as np
-# import pandas as pd
 import sys
 import os
 import copy
 
 import json
-# import yaml
 import re
 from pathlib import Path, PureWindowsPath
 
 from collections import OrderedDict
 from collections.abc import Sequence, Container
-
-import objectpath # http://objectpath.org/reference.html
 
 # from .file_management import FileManager, FileNameAnalyzer, serialize_to_file, open_in_explorer
 from .parser import *
@@ -32,71 +28,9 @@ __all__ = ['BUIDParser', 'BarelyDB', 'BarelyDBEntity', 'FileManager', 'FileNameA
 module_logger = logging.getLogger(__name__)
 module_logger.setLevel(logging.DEBUG)
 
-# general useful module components
-def _reload_module():
-    import sys
-    import importlib
-    current_module = sys.modules[__name__]
-    module_logger.info('Reloading module %s' % __name__)
-    importlib.reload(current_module)
-
-
-# class SourcedItem(float):
-#     name = None
-#     value = None
-#     property_file = None
-#     source = None
-
-#     @classmethod
-#     def make(cls, name, value, property_file, source):       
-#         new_item = cls(value)
-#         new_item.name = name
-#         new_item.property_file = property_file
-#         new_item.source = source
-
-#     def __init__(self, name, value, property_file, source):
-#         self.name = name
-#         self.value = value
-#         self.property_file = property_file
-#         self.source = source
-
-#     def as_dict(self):
-#         return {self.name: {'value': self.value, 'property_file': self.property_file, 'source': self.source}}
-
-#     def __str__(self):
-#         return f'{self.name} = {self.value} (from {self.property_file}, {self.source})'
-
-#     def __repr__(self):
-#         return "%s(**%s)" % (self.__class__.__qualname__, self.__dict__)
-
-
-# class SourcedItem(float):
-#     name = None
-#     value = None
-#     property_file = None
-#     source = None
-
-#     @classmethod
-#     def make(cls, name, value, property_file, source):       
-#         new_item = cls(value)
-#         new_item.name = name
-#         new_item.property_file = property_file
-#         new_item.source = source
-#         return new_item
-
-#     def as_dict(self):
-#         return {self.name: {'value': self.value, 'property_file': self.property_file, 'source': self.source}}
-
-#     def __str__(self):
-#         return f'{self.name} = {self.value} (from {self.property_file}, {self.source})'
-
-#     def __repr__(self):
-#         return "%s(**%s)" % (self.__class__.__qualname__, self.__dict__)
-
 
 from collections import namedtuple
 SourcedItem = namedtuple('SourcedItem', 'name, value, property_file, source')
-
 
 class BarelyDB(object):
 
@@ -127,8 +61,8 @@ class BarelyDB(object):
         ]
 
     base_path = None
-    property_file_glob = '*.property.json'
-    preferred_property_files = []
+    path_depth = None
+
     ignored_files = ['desktop.ini']
 
     buid_types = BUIDParser.buid_types
@@ -267,9 +201,6 @@ class BarelyDB(object):
 
         for buid_type, buid_path in self.buid_type_paths.items():
             self.logger.info(f'{buid_type} --> {buid_path}')
-                    
-
-
 
 
     def load_components(self, buid, absolute=False):
@@ -306,10 +237,7 @@ class BarelyDB(object):
     def entities(self):
         return list(self.entity_paths.keys())
 
-    # #### Deprecated. Replaced by get_entity_path
-    # def entity_path(self, buid, absolute=False):
-    #     self.logger.warning('entity_path is deprecated! use get_entity_path instead!')
-    #     return self.get_entity_path(buid, absolute=absolute)
+
 
     def get_free_buid(self, start_buid, no_buids = 1, no_free_biuds=None):
         buid_p = BUIDParser()
@@ -390,11 +318,7 @@ class BarelyDB(object):
             return component_paths[component]    
         else:
             raise FileNotFoundError(f'No path for component {component} in {buid}!')
-    
-    # #### Deprecated. Replaced by get_entity_path
-    # def entity_files(self, buid, glob, must_contain_buid = False, output_as_str=True):
-    #     self.logger.warning('entity_files is deprecated! use get_entity_files instead!')
-    #     return self.get_entity_files(buid, glob, must_contain_buid=must_contain_buid, output_as_str=output_as_str)
+
 
     def _get_files(self, buid, path, glob, must_contain_buid = False, output_as_str=True):
         files = path.glob(glob)
@@ -423,170 +347,6 @@ class BarelyDB(object):
         buid = self.buid_normalizer(buid)        
         path = self.get_entity_path(buid)
         return self._get_files(buid, path, glob, must_contain_buid=must_contain_buid, output_as_str=output_as_str)
-
-
-
-
-    def entity_properties_files(self, buid, output_as_str=True):
-        module_logger.warning('Property interface of BarelyDB is deprecated!')
-        buid = self.buid_normalizer(buid)        
-        files = self.get_entity_files(buid, self.property_file_glob, output_as_str=output_as_str)
-        return list(files)
-
-    def load_entity_properties(self, buid):
-        module_logger.warning('Property interface of BarelyDB is deprecated!')
-        buid = self.buid_normalizer(buid)       
-        old_properties = self.entity_properties.get(buid, {})
-
-        files = self.entity_properties_files(buid, output_as_str=False)
-                
-        properties = {}
-        properties['entity_path'] = self.get_entity_path(buid)
-        
-        self.load_components(buid)
-        properties['component_paths'] = self.get_component_paths(buid)
-        properties['components'] = list(self.get_component_paths(buid).keys())
-
-        # self.component_paths[base_buid] = component_paths
-        
-        for fn in files:
-            try:
-                with open(str(fn), 'r') as f:
-                    new_property_data = json.load(f)
-                    new_property_data['property_file'] = fn.name
-
-                    if 'buid' not in new_property_data:
-                        self.logger.warning(f'Property file has no buid specification {fn.name}!')
-                        new_property_data['buid'] = BUID.INVALID
-
-                    if 'source' not in new_property_data:
-                        self.logger.warning(f'Property file has no source specification {fn.name}!')
-                        new_property_data['source'] = 'Unknown source!'
-
-                    properties[fn.name] = new_property_data
-                    
-            except:
-                raise RuntimeError(f'Error in property file {str(fn)}')
-
-        self.entity_properties[buid] = properties
-
-    def reload_entity_properties(self, buid = None):
-        module_logger.warning('Property interface of BarelyDB is deprecated!')
-        buids = self.entity_properties.keys() if buid is None else [buid]
-        
-        for buid in buids:
-            self.load_entity_properties(buid)           
-
-    def get_entity_properties(self, buid, reload = False):
-        module_logger.warning('Property interface of BarelyDB is deprecated!')
-        buid = self.buid_normalizer(buid)       
-
-        if (buid not in self.entity_properties) or reload:
-            self.load_entity_properties(buid)
-
-        return self.entity_properties[buid]
-
-    def get_entity_tree(self, buid):
-        module_logger.warning('Property interface of BarelyDB is deprecated!')
-        buid = self.buid_normalizer(buid)       
-        tree = objectpath.Tree(self.get_entity_properties(buid))
-        return tree
-
-    def add_preferred_file(self, prop_file):
-        module_logger.warning('Property interface of BarelyDB is deprecated!')
-        self.preferred_property_files = list(set(self.preferred_property_files + [prop_file]))
-
-    def clear_preferred_files(self):
-        module_logger.warning('Property interface of BarelyDB is deprecated!')
-        self.preferred_property_files = []
-
-    def query_property(self, buid, prop, property_file = '', source = '', warn_empty = True):
-        module_logger.warning('Property interface of BarelyDB is deprecated!')
-        buid = self.buid_normalizer(buid)       
-
-        prop = str(prop)
-        property_file = str(property_file)
-        source = str(source)
-
-        tree = self.get_entity_tree(buid)
-
-        # query =  f'$..*[("{property_file}" in @.property_file)]'
-
-        # query property together with file and source information
-        selector = f'({prop} in @)'
-        selector += f'and ("{property_file}" in @.property_file)'
-        selector += f'and ("{source}" in @.source)'
-        selector = f'[{selector}]'
-
-        query =  f'$..*{selector}'
-        query += f'.({prop}, property_file, source)'
-        result = list(tree.execute(query))
-
-        def make_item(res):
-            return SourcedItem(name=prop, 
-                        value=res[prop], 
-                        property_file=res['property_file'], 
-                        source=res['source'])
-
-        if len(result) == 0:
-            if warn_empty:
-                self.logger.warning(f'No value for {prop} in entity {buid}!')
-            return None
-        elif len(result) == 1:
-            return make_item(result[0])
-        elif len(result) > 1:
-            # try to remove ambiguity by self.preferred_property_files
-            
-            selector = [f'("{p}" in @.property_file)' for p in self.preferred_property_files]
-            selector = ' or '.join(selector)
-            selector = f'[{selector}]' if selector else ''
-            # self.logger.warning(str(selector))
-
-            tree = objectpath.Tree(result)
-            result_amb = list(tree.execute(f'$..*{selector}'))            
-
-            if len(result_amb) == 0:
-                self.logger.warning(f'Multiple sources for {prop} in entity {buid}! Filtering with preferred files did not yield a result. Please, refine this query adding a property file to preferred_property_files! Found sources follow below:')
-                for res in result:
-                    self.logger.warning(json.dumps(res, indent=4))
-                return None
-            elif (len(result_amb) == 1):
-                return make_item(result_amb[0])
-            elif (len(result_amb) > 1):
-                self.logger.warning(f'Multiple sources for {prop} in entity {buid}, even after filtering with preferred_property_files! Please, remove entries from preferred_property_files to lift this ambiguity! Found sources follow below:')
-                for res in result_amb:
-                    self.logger.warning(json.dumps(res, indent=4))
-                return None
-        
-        # shouldnt arrive here
-        return None
-
-        # list(tree.execute("$..*[tsc in @].property_file"))
-
-        # query = f'$..*[("{str(property_file)}" in @.property_file)].{str(prop)}'
-        # result = list(tree.execute(query)
-
-
-    def query_properties(self, buid, props):
-        ''' Queries a list of properties. 
-
-        Parameters: 
-        props is a list of strings or dictionaries or mixed. 
-        Strings are interpreted as the prop parameter to query_properties.
-        Dictionaries as keyword parameters to query_properties.
-        '''
-        module_logger.warning('Property interface of BarelyDB is deprecated!')
-        buid = self.buid_normalizer(buid)       
-
-        result = []
-        for p in props:
-            if type(p) == dict:
-                result.append(self.query_property(buid, **p)) 
-            else:
-                result.append(self.query_property(buid, str(p))) 
-
-        return result
-
 
     def get_entity(self, buid):
         return BarelyDBEntity(buid, self)
@@ -638,7 +398,7 @@ class BarelyDBEntity(object):
     @property
     def buid_with_component(self):
         return self._buid + (f'-{self.component}' if self.component is not None else '')
-    
+
     @property
     def bdb(self):
         return self._bdb
@@ -696,28 +456,7 @@ class BarelyDBEntity(object):
                            ))
         
         return FileManager(**options)
-                 
-    def create_property_file(self,
-                             operator,
-                             source,
-                             property_file,
-                             **properties
-                            ):
-                
-        output = OrderedDict(buid = self.buid,
-                             operator = operator,
-                             source = source,
-                            )
-        
-        output.update(properties)
-        
-        json_default_opts = dict(indent=4)
-        output_json = json.dumps(output, **json_default_opts)
-        
-        property_file_res = self.resolve_relative_path(property_file)
-        with open(property_file_res, 'w') as fp:
-            fp.write(output_json)  
-        self.logger.info(f'Property written to file {property_file}.')
+
 
 
     def create_entity_path(self, path_comment):
@@ -754,11 +493,6 @@ class BarelyDBEntity(object):
                                         no_buids=no_buids, 
                                         no_free_biuds=no_free_biuds)
 
-        
-    # ### Deprecated! Replaced by get_entity_path
-    # def entity_path(self, absolute=False):
-    #     return self.bdb.entity_path(self.buid, absolute=absolute)      
-
     def get_entity_path(self, absolute=False):
         return self.bdb.get_entity_path(self.buid, absolute=absolute)      
 
@@ -770,10 +504,6 @@ class BarelyDBEntity(object):
 
     def get_entity_name(self):
         return self.bdb.get_entity_name(self.buid)      
-
-    # ### Deprecated! Replaced by get_entity_files
-    # def entity_files(self, *args, **kwds):
-    #     return self.bdb.entity_files(self.buid, *args, **kwds)
 
     def get_entity_files(self, glob, must_contain_buid = False, output_as_str=True):
         return self.bdb.get_entity_files(self.buid, glob, must_contain_buid=must_contain_buid, output_as_str=output_as_str)
@@ -815,24 +545,8 @@ class BarelyDBEntity(object):
             files = [str(fn) for fn in files]
 
         return list(files)
-    
-    
-    
-    def reload_entity_properties(self):
-        return self.bdb.reload_entity_properties(self.buid)
 
-    def get_entity_properties(self, reload = False):
-        return self.bdb.get_entity_properties(self.buid, reload=reload)
 
-    def get_entity_tree(self):
-        return self.bdb.get_entity_tree(self.buid)
-
-    def query_property(self, *args, **kwds):
-        return self.bdb.query_property(self.buid, *args, **kwds)
-
-    def query_properties(self, *args, **kwds):
-        return self.bdb.query_properties(self.buid, *args, **kwds)
-    
 
     def has_object(self, object_class, allow_parent=None):
         filename = object_class.file_serializer.resolve_file_from_entity(self, allow_parent=allow_parent)
