@@ -1,0 +1,47 @@
+buid: WB3001-P1
+name:
+operator: unknown operator
+measurement_date: unknown measurement date
+comment: describe the measurement here
+meas_name: wlt_homo
+wlt_homos:
+- meas_name: '0'
+  X: !unit -7.82833 um
+  Y: !unit -0.493367 um
+  Z: !unit 2.8435 um
+  X_std: !unit 0.797915 um
+  Y_std: !unit 0.672525 um
+  Z_std: !unit 0.793533 um
+  FFM: !unit 1.99905 um
+  XTM: !unit 10.6718 um
+  ALM: !unit -1.82607 um
+  FFM_std: !unit 0.725764 um
+  XTM_std: !unit 1.23188 um
+  ALM_std: !unit 0.450457 um
+- meas_name: A
+  X: !unit 257.3 um
+  Y: !unit 246.375 um
+  Z: !unit 248.46 um
+  X_std: !unit 4.60536 um
+  Y_std: !unit 4.3196 um
+  Z_std: !unit 4.483 um
+  FFM: !unit -6.50472 um
+  XTM: !unit -8.84039 um
+  ALM: !unit 250.712 um
+  FFM_std: !unit 2.33582 um
+  XTM_std: !unit 5.20859 um
+  ALM_std: !unit 3.77551 um
+- meas_name: B
+  X: !unit 254.684 um
+  Y: !unit 241.448 um
+  Z: !unit 250.711 um
+  X_std: !unit 6.09732 um
+  Y_std: !unit 3.57939 um
+  Z_std: !unit 2.95577 um
+  FFM: !unit -11.2492 um
+  XTM: !unit -3.97289 um
+  ALM: !unit 248.948 um
+  FFM_std: !unit 2.93654 um
+  XTM_std: !unit 4.80935 um
+  ALM_std: !unit 3.71538 um
+plot_file:

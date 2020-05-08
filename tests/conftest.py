@@ -2,9 +2,12 @@ import pytest
 import os
 from pathlib import Path
 
-repo_base = Path(__file__).absolute().resolve().parent.parent
+
+test_base = Path(__file__).absolute().resolve().parent
+repo_base = test_base.parent
 # db = repo_base.joinpath('..','barely-db').resolve()
 
+print(str(test_base))
 print(str(repo_base))
 
 import sys
@@ -19,7 +22,7 @@ from barely_db import *
 
 ### initialize code and database
 
-bdb_local = BarelyDB(base_path='./Database', path_depth=1)
+bdb_local = BarelyDB(base_path=str(test_base.joinpath('Database')), path_depth=1)
 bdb_local.load_entities()
 
 # Testing mode database
@@ -27,6 +30,18 @@ bdb_local.load_entities()
 def bdb():
     ''' Creates a barelydb instance using the test database. '''
     return bdb_local
+
+
+# Testing database config
+@pytest.fixture(scope="session")
+def scratch_base_path():
+    ''' Returns a base path that can be used for any kind of testing. '''
+    return str(test_base.joinpath('Database_Scratch'))
+
+
+
+
+
 
 
 # Testing customized BUIDParser

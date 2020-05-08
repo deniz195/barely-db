@@ -1,0 +1,41 @@
+buid: WB3001
+name: WB3001_SL_LGA1
+source: copied from WB3009-T2
+manufacturing_date: '190226'
+slurry:
+  buid: SL0384
+  name: SL0384_LGA1_Qualifier
+foil:
+  buid: RM0255
+  name: RM0255_1804xx_CuFoil_CCP_15um_DUB
+entity_act_neg:
+  buid: RM0282
+  name: RM0282_LG-A1
+l_neg: !unit 16.2 mg / cm ** 2
+dens_neg: !unit 1.6 g / ml
+F_act_neg: !unit 96.6 percent
+t_cc_neg: !unit 15 um
+qmass_neg: !unit 354.2 mAh / g
+qmass_1st_neg: !unit 378.4 mAh / g
+t_neg: !unit 101.25 um
+l_cc_neg: !unit (13.1800 +/- 0.1800) mg / cm ** 2
+qarea_neg: !unit 5.73804 mAh / cm ** 2
+qarea_1st_neg: !unit 6.13008 mAh / cm ** 2
+nm_neg: !unit 11
+F_adh_neg: !unit 4 mN / mm
+alpha_agt: !unit 90 deg
+beta_agt: !unit 15 deg
+coating_pattern:
+  d_crossweb:
+  - !unit 40 mm
+  - !unit 200 mm
+  - !unit 40 mm
+  d_downweb: []
+  F_coat: !unit 2 count
+  W_crossweb: !unit 280 mm
+  L_downweb:
+  W_coat_eff_ss_crossweb: !unit 200 mm
+  W_coat_eff_total_crossweb: !unit 400 mm
+W_foil: !unit 280 mm
+wlt_prediction: !unit 239.044 um
+L_target: !unit 10m

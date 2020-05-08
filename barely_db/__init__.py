@@ -20,9 +20,10 @@ from collections.abc import Sequence, Container
 # from .file_management import FileManager, FileNameAnalyzer, serialize_to_file, open_in_explorer
 from .parser import *
 from .file_management import *
+
 # from .tools import *
 
-__all__ = ['BarelyDB', 'BarelyDBConfig', 'BarelyDBEntity', 'FileManager', 'FileNameAnalyzer', 'serialize_to_file', 'open_in_explorer', 'ClassFileSerializer']
+__all__ = ['BarelyDB', 'BarelyDBConfig', 'BarelyDBSystemConfig', 'BarelyDBEntity', 'FileManager', 'FileNameAnalyzer', 'serialize_to_file', 'open_in_explorer', 'ClassFileSerializer']
 
 # create logger
 module_logger = logging.getLogger(__name__)
@@ -40,49 +41,37 @@ def _reload_module():
 
 @attr.s(frozen=True, kw_only=True)
 class BarelyDBSystemConfig:
-    default_base_path = attr.ib(factory=list, type=typing.List[str])
+    default_base_path = attr.ib(factory=dict, type=typing.Dict[str, typing.List[str]])
 
-    # default_base_path = [\
-        # 'G:\\Team Drives\\Database',
-        # 'G:\\Shared drives\\Database',
-        # '/Volumes/GoogleDrive/Team Drives/Database',
-        # '/Volumes/GoogleDrive/Teamablagen/Database',
-        # '/Volumes/GoogleDrive/Geteilte Ablagen/Database',
-        # 'G:\\Geteilte Ablagen\\Database',
-        # 'G:\\Drive partagés\\Database',
-        # '/home/pi/GoogleDrive/database',
-        # '/home/jovyan/database',
-        # ]
-    
     @classmethod
-    def get_home_directory_file(cls, filename=None):
-        home = Path.home()
-
-        if filename:
-            result = str(home.joinpath(filename))
-        else:
-            result = str(home)
-
-        return result
+    def from_legacy_default(cls):
+        return cls(default_base_path = {\
+            "battrion_manufacturing":
+                    [\
+                'G:\\Team Drives\\Database',
+                'G:\\Shared drives\\Database',
+                '/Volumes/GoogleDrive/Team Drives/Database',
+                '/Volumes/GoogleDrive/Teamablagen/Database',
+                '/Volumes/GoogleDrive/Geteilte Ablagen/Database',
+                'G:\\Geteilte Ablagen\\Database',
+                'G:\\Drive partagés\\Database',
+                '/home/pi/GoogleDrive/database',
+                '/home/jovyan/database',
+                ]
+            }
+        )
+    
 
     @classmethod
     def get_file(cls):
-        user_config_file = cls.get_home_directory_file(filename='.bdb_system_config.json')
+        filename = '.bdb_system_config.json'
+
+        user_config_file = str(Path.home().joinpath(filename))
         return user_config_file
 
-    @staticmethod
-    def resolve_file(base_path):
-        base_path = Path(base_path)
-        
-        if base_path.is_dir():
-            config_file = base_path.joinpath('bdb_config.json')
-        else:
-            config_file = base_path
-
-        return str(config_file)
-
-    def save(self, base_path):
-        config_file = self.resolve_file(base_path)
+    def save(self, config_file=None):
+        if config_file is None:
+            config_file = self.get_file()        
 
         self_dict = attr.asdict(self)
 
@@ -90,18 +79,29 @@ class BarelyDBSystemConfig:
             json.dump(self_dict, f, indent=4)
 
     @classmethod
-    def load(cls, base_path):
-        config_file = Path(cls.resolve_file(base_path))
+    def load(cls, config_file=None, default_to_empty=False):
+        if config_file is None:
+            config_file = cls.get_file()        
 
-        with open(config_file, 'rb') as f:
-            self_dict = json.load(f)
+        try:
+            with open(config_file, 'rb') as f:
+                self_dict = json.load(f)
 
-        return cattr.structure(self_dict, cls)
-
+            return cattr.structure(self_dict, cls)
+        
+        except FileNotFoundError as e:
+            if default_to_empty:
+                module_logger.warning(f'Could not load {config_file}!')
+                return cls()
+            else:
+                raise
+        
 
 
 @attr.s(frozen=True, kw_only=True)
 class BarelyDBConfig:
+
+    name = attr.ib(default='master', type=str)
 
     path_depth = attr.ib(default=0)
     known_bases = attr.ib(factory=list, type=typing.List[str])
@@ -138,8 +138,9 @@ class BarelyDBConfig:
         return cattr.structure(self_dict, cls)
 
     @classmethod
-    def from_default(cls):
+    def from_legacy_default(cls):
         return cls(
+            name='battrion_manufacturing',
             path_depth = 1,
             known_bases = [\
         'G:\\My Drive\\Battrion_AG\\DATABASE\\',
@@ -170,42 +171,25 @@ class BarelyDBConfig:
     
 
 class BarelyDB(object):
-
-    # default_base_path = 'G:\\My Drive\\Battrion_AG\\DATABASE'
-    # create list of possible default base paths 
-    default_base_path = [\
-        'G:\\Team Drives\\Database',
-        'G:\\Shared drives\\Database',
-        '/Volumes/GoogleDrive/Team Drives/Database',
-        '/Volumes/GoogleDrive/Teamablagen/Database',
-        '/Volumes/GoogleDrive/Geteilte Ablagen/Database',
-        'G:\\Geteilte Ablagen\\Database',
-        'G:\\Drive partagés\\Database',
-        '/home/pi/GoogleDrive/database',
-        '/home/jovyan/database',
-        ]
-
+    config = None
     base_path = None
 
-    config = None
-
-    path_depth = None
-    ignored_files = None
-    known_bases = None
     auto_reload_components = None
 
-    buid_types = None
     buid_type_paths = None
 
     _MyBUIDParser = None
 
-    def __init__(self, base_path=None, path_depth=None, auto_reload_components = True):
+    def __init__(self, name=None, base_path=None, path_depth=None, auto_reload_components = True):
         self.logger = module_logger
 
         # if base path is None, check default base path for existance and
         # break at first existing path 
         if base_path is None:
-            for def_base_path in self.default_base_path:
+            sys_config = BarelyDBSystemConfig.load(default_to_empty=True)
+            default_base_path = sys_config.default_base_path.get(name, [])
+
+            for def_base_path in default_base_path:
                 if os.path.exists(def_base_path):
                     base_path = def_base_path
                     self.logger.info(f'Using default path {base_path}')
@@ -216,12 +200,10 @@ class BarelyDB(object):
 
         self.config = BarelyDBConfig.load(base_path)
 
+
         if path_depth:
             self.logger.warning('Deprecated: path_depth in constructor is deprecated!')
 
-        self.path_depth = self.config.path_depth
-        self.ignored_files = self.config.ignored_files
-        self.known_bases = self.config.known_bases
         self.auto_reload_components = auto_reload_components
 
         self.base_path = Path(base_path)
@@ -231,7 +213,6 @@ class BarelyDB(object):
         self.entity_properties = {}
         self.component_paths = {}
 
-        self.buid_types = self.config.buid_types
         self._MyBUIDParser = BUIDParser.create_class(self.config.buid_types)
 
         self.buid_normalizer = self.BUIDParser(ignore_unknown=True, 
@@ -250,8 +231,32 @@ class BarelyDB(object):
 
 
     @property
+    def name(self):
+        return self.config.name
+    
+    @property
+    def path_depth(self):
+        return self.config.path_depth
+    
+    @property
+    def ignored_files(self):
+        return self.config.ignored_files
+    
+    @property
+    def known_bases(self):
+        return self.config.known_bases
+    
+    @property
+    def buid_types(self):
+        return self.config.buid_types
+
+    @property
     def BUIDParser(self):
         return self._MyBUIDParser
+
+    def __repr__(self):
+        return f'{self.__class__.__qualname__}(name={self.name} @ {self.base_path} + {self.path_depth})'
+
 
     def resolve_file(self, filename):
         base_path_str = f'{str(self.base_path)}{os.sep}'
@@ -347,8 +352,8 @@ class BarelyDB(object):
             self.logger.info(f'{buid_type} --> {buid_path}')
 
 
-    def load_components(self, buid, absolute=False):
-        entity_path = self.get_entity_path(buid, absolute=absolute)
+    def load_components(self, buid):
+        entity_path = self.get_entity_path(buid)
         base_buid = self.buid_normalizer(buid)       
 
         def iter_subdir(path, depth=0):
@@ -374,11 +379,39 @@ class BarelyDB(object):
         self.component_paths[base_buid] = component_paths
         
         # self.logger.debug(f'Components for {base_buid} found: {len(component_paths)}')
-        
-        
+                
     @property
     def entities(self):
         return list(self.entity_paths.keys())
+
+
+
+    def get_entity_path(self, buid):
+        buid = self.buid_normalizer(buid)
+        path = self.entity_paths[buid]
+        path = path.resolve().absolute()
+        return path
+    
+    def get_entity_name(self, buid):
+        path = self.get_entity_path(buid)
+        return Path(path).parts[-1]
+
+    def get_component_paths(self, buid):
+        buid = self.buid_normalizer(buid)
+        if self.auto_reload_components or (buid not in self.component_paths):
+            self.load_components(buid)
+                       
+        paths = self.component_paths[buid]
+        paths = {comp: Path(path).resolve().absolute() for comp, path in paths.items()}
+        return paths
+
+    def get_component_path(self, buid, component):
+        component_paths = self.get_component_paths(buid)
+        
+        if component in component_paths:
+            return component_paths[component]    
+        else:
+            raise FileNotFoundError(f'No path for component {component} in {buid}!')
 
 
     def get_free_buid(self, start_buid, no_buids = 1, no_free_biuds=None):
@@ -405,12 +438,12 @@ class BarelyDB(object):
         return found_buids[0:no_buids]
         
 
-    def create_entity_path(self, buid, comment, absolute=False, reload=True):       
+    def create_entity_path(self, buid, comment, reload=True):       
         buid = self.buid_normalizer(buid)
         buid_type = self.buid_normalizer.parse_type(buid)
 
         try:
-            buid_path = self.get_entity_path(buid, absolute=absolute)
+            buid_path = self.get_entity_path(buid)
             return buid_path
         except KeyError:
             # entity does not exist
@@ -420,9 +453,7 @@ class BarelyDB(object):
         buid_base_path = Path(self.buid_type_paths[buid_type])
         buid_path = buid_base_path.joinpath(f'{buid}_{comment}')
 
-        # path = self.entity_paths[buid]
-        if absolute:
-            buid_path = buid_path.resolve().absolute()
+        buid_path = buid_path.resolve().absolute()
         
         buid_path.mkdir(parents=False, exist_ok=True)
 
@@ -431,35 +462,6 @@ class BarelyDB(object):
 
         return buid_path
 
-
-    def get_entity_path(self, buid, absolute=False):
-        buid = self.buid_normalizer(buid)
-        path = self.entity_paths[buid]
-        if absolute:
-            path = path.resolve().absolute()
-        return path
-    
-    def get_entity_name(self, buid):
-        path = self.get_entity_path(buid, absolute=True)
-        return Path(path).parts[-1]
-
-    def get_component_paths(self, buid, absolute=False):
-        buid = self.buid_normalizer(buid)
-        if self.auto_reload_components or (buid not in self.component_paths):
-            self.load_components(buid)
-                       
-        paths = self.component_paths[buid]
-        if absolute:
-            paths = {comp: Path(path).resolve().absolute() for comp, path in paths.items()}
-        return paths
-
-    def get_component_path(self, buid, component, absolute=False):
-        component_paths = self.get_component_paths(buid, absolute=absolute)
-        
-        if component in component_paths:
-            return component_paths[component]    
-        else:
-            raise FileNotFoundError(f'No path for component {component} in {buid}!')
 
 
     def _get_files(self, buid, path, glob, must_contain_buid = False, output_as_str=True):
@@ -632,14 +634,14 @@ class BarelyDBEntity(object):
                                         no_buids=no_buids, 
                                         no_free_biuds=no_free_biuds)
 
-    def get_entity_path(self, absolute=False):
-        return self.bdb.get_entity_path(self.buid, absolute=absolute)      
+    def get_entity_path(self):
+        return self.bdb.get_entity_path(self.buid)      
 
     def open_entity_path(self):
         if self.component is None:
-            open_in_explorer(self.get_entity_path(absolute=True))
+            open_in_explorer(self.get_entity_path())
         else:
-            open_in_explorer(self.get_component_path(absolute=True))
+            open_in_explorer(self.get_component_path())
 
     def get_entity_name(self):
         return self.bdb.get_entity_name(self.buid)      
@@ -653,14 +655,14 @@ class BarelyDBEntity(object):
 
         return self.bdb.get_component_files(self.buid, component, glob, must_contain_buid=must_contain_buid, output_as_str=output_as_str)
 
-    def get_component_paths(self, absolute=False):
-        return self.bdb.get_component_paths(self.buid, absolute=absolute)      
+    def get_component_paths(self):
+        return self.bdb.get_component_paths(self.buid)      
         
-    def get_component_path(self, component=None, absolute=False):
+    def get_component_path(self, component=None):
         if component is None:
             component = self.component
 
-        return self.bdb.get_component_path(self.buid, component, absolute=absolute)
+        return self.bdb.get_component_path(self.buid, component)
 
     def component_files(self, glob, must_contain_buid = False, output_as_str=True, component=None):
         if component is None:

@@ -1,0 +1,99 @@
+buid: WB3001-P1
+name: WB3001_SL_LGA1
+meas_name: _cw
+loading_target: !unit 16.2 mg / cm ** 2
+loading_mean: !unit 16.7776+/-0.1243 mg / cm ** 2
+loading_min: !unit 15.9116+/-0.4112 mg / cm ** 2
+loading_max: !unit 17.4461+/-0.4412 mg / cm ** 2
+loading_homos:
+- name: AS
+  loading_target: !unit 16.2 mg / cm ** 2
+  X: !unit (16.8343 +/- 0.4419) mg / cm ** 2
+  Y: !unit (17.1057 +/- 0.4358) mg / cm ** 2
+  Z: !unit (16.5185 +/- 0.4194) mg / cm ** 2
+  FFM: !unit (0.429269 +/- 0.531683) mg / cm ** 2
+  XTM: !unit (-0.315784 +/- 0.609241) mg / cm ** 2
+  ALM: !unit (16.8195 +/- 0.2497) mg / cm ** 2
+  FFM_rel: !unit (2.64981 +/- 3.28200) percent
+  XTM_rel: !unit (-1.94929 +/- 3.76075) percent
+  ALM_rel: !unit (3.82411 +/- 1.54124) percent
+  X_rel: !unit (3.91549 +/- 2.72787) percent
+  Y_rel: !unit (5.59065 +/- 2.68992) percent
+  Z_rel: !unit (1.96620 +/- 2.58881) percent
+- name: AE
+  loading_target: !unit 16.2 mg / cm ** 2
+  X: !unit (15.9116 +/- 0.4112) mg / cm ** 2
+  Y: !unit (16.7554 +/- 0.4276) mg / cm ** 2
+  Z: !unit (16.4692 +/- 0.5765) mg / cm ** 2
+  FFM: !unit (0.564958 +/- 0.555173) mg / cm ** 2
+  XTM: !unit (0.557557 +/- 0.708177) mg / cm ** 2
+  ALM: !unit (16.3787 +/- 0.2758) mg / cm ** 2
+  FFM_rel: !unit (3.48739 +/- 3.42699) percent
+  XTM_rel: !unit (3.44171 +/- 4.37146) percent
+  ALM_rel: !unit (1.10324 +/- 1.70217) percent
+  X_rel: !unit (-1.78008 +/- 2.53844) percent
+  Y_rel: !unit (3.42817 +/- 2.63948) percent
+  Z_rel: !unit (1.66163 +/- 3.55893) percent
+- name: BS
+  loading_target: !unit 16.2 mg / cm ** 2
+  X: !unit (17.0415 +/- 0.4308) mg / cm ** 2
+  Y: !unit (17.4461 +/- 0.4412) mg / cm ** 2
+  Z: !unit (17.4264 +/- 0.4410) mg / cm ** 2
+  FFM: !unit (0.212168 +/- 0.538209) mg / cm ** 2
+  XTM: !unit (0.384862 +/- 0.616499) mg / cm ** 2
+  ALM: !unit (17.3047 +/- 0.2527) mg / cm ** 2
+  FFM_rel: !unit (1.30968 +/- 3.32228) percent
+  XTM_rel: !unit (2.37569 +/- 3.80555) percent
+  ALM_rel: !unit (6.81911 +/- 1.55989) percent
+  X_rel: !unit (5.19471 +/- 2.65945) percent
+  Y_rel: !unit (7.69223 +/- 2.72341) percent
+  Z_rel: !unit (7.57040 +/- 2.72205) percent
+- name: BE
+  loading_target: !unit 16.2 mg / cm ** 2
+  X: !unit (16.8244 +/- 0.4561) mg / cm ** 2
+  Y: !unit (16.7159 +/- 0.4249) mg / cm ** 2
+  Z: !unit (16.2817 +/- 0.4153) mg / cm ** 2
+  FFM: !unit (0.162826 +/- 0.525011) mg / cm ** 2
+  XTM: !unit (-0.542754 +/- 0.616851) mg / cm ** 2
+  ALM: !unit (16.6073 +/- 0.2497) mg / cm ** 2
+  FFM_rel: !unit (1.00510 +/- 3.24081) percent
+  XTM_rel: !unit (-3.35033 +/- 3.80772) percent
+  ALM_rel: !unit (2.51444 +/- 1.54117) percent
+  X_rel: !unit (3.85457 +/- 2.81558) percent
+  Y_rel: !unit (3.18451 +/- 2.62262) percent
+  Z_rel: !unit (0.50424 +/- 2.56345) percent
+- name: A
+  loading_target: !unit 16.2 mg / cm ** 2
+  X: !unit (16.3730 +/- 0.7797) mg / cm ** 2
+  Y: !unit (16.9305 +/- 0.4977) mg / cm ** 2
+  Z: !unit (16.4939 +/- 0.5053) mg / cm ** 2
+  FFM: !unit (0.497114 +/- 0.680836) mg / cm ** 2
+  XTM: !unit (0.120886 +/- 0.929103) mg / cm ** 2
+  ALM: !unit (16.5991 +/- 0.3513) mg / cm ** 2
+  FFM_rel: !unit (3.06860 +/- 4.20269) percent
+  XTM_rel: !unit (0.74621 +/- 5.73521) percent
+  ALM_rel: !unit (2.46368 +/- 2.16877) percent
+  X_rel: !unit (1.06770 +/- 4.81272) percent
+  Y_rel: !unit (4.50941 +/- 3.07237) percent
+  Z_rel: !unit (1.81391 +/- 3.11935) percent
+- name: B
+  loading_target: !unit 16.2 mg / cm ** 2
+  X: !unit (16.9330 +/- 0.4695) mg / cm ** 2
+  Y: !unit (17.0810 +/- 0.6740) mg / cm ** 2
+  Z: !unit (16.8540 +/- 0.9158) mg / cm ** 2
+  FFM: !unit (0.187497 +/- 0.847924) mg / cm ** 2
+  XTM: !unit (-0.07895 +/- 1.02910) mg / cm ** 2
+  ALM: !unit (16.9560 +/- 0.4100) mg / cm ** 2
+  FFM_rel: !unit (1.15739 +/- 5.23410) percent
+  XTM_rel: !unit (-0.48732 +/- 6.35246) percent
+  ALM_rel: !unit (4.66677 +/- 2.53116) percent
+  X_rel: !unit (4.52464 +/- 2.89794) percent
+  Y_rel: !unit (5.43837 +/- 4.16021) percent
+  Z_rel: !unit (4.03732 +/- 5.65294) percent
+compound_regions:
+  A:
+  - AS
+  - AE
+  B:
+  - BS
+  - BE
