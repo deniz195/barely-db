@@ -109,6 +109,11 @@ def test_format(bdb):
     assert buid_p.format('WB', 99) == 'WB0099'
     assert buid_p.format('WB', '99') == 'WB0099'
 
+    with pytest.raises(ValueError) as err:
+        buid_p.format('WB', 99, '???')
+
+
+# bool(buid_comp_only_regex.match('P01'))
 
 # def test_parser_extended(bdb):
     

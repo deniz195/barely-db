@@ -39,6 +39,7 @@ class BUIDParser(object):
     buid_regex = re.compile(r'([a-zA-Z]{2,3})(\d{2,5})')
     buid_comp_regex = re.compile(r'([a-zA-Z]{2,3})(\d{2,5})-?([a-zA-Z]{1,2}\d{1,5})?')
     buid_comp_must_regex = re.compile(r'([a-zA-Z]{2,3})(\d{2,5})-([a-zA-Z]{1,2}\d{1,5})')
+    buid_comp_only_regex = re.compile(r'([a-zA-Z]{1,2}\d{1,5})')
     
     ignore_unknown = None
 
@@ -103,7 +104,7 @@ class BUIDParser(object):
 
     def parse(self, buid_str):        
         regex = self.buid_comp_regex if self.allow_components else self.buid_regex
-        result = self._parse(buid_str, regex, self.format_buid_from_regex)
+        result = self._parse(buid_str, regex, self._format_buid_from_regex)
         return result
 
     def parse_component(self, buid_str):        
@@ -172,7 +173,7 @@ class BUIDParser(object):
 
         elif len(res) > 1:
             if self.mode in ['unique']:
-                res_formated = [self.format_buid_from_regex(r) for r in res]
+                res_formated = [self._format_buid_from_regex(r) for r in res]
                 module_logger.warning(f'More than one valid buid found in {buid_str} ({res_formated}!')
                 return None
 
@@ -185,7 +186,7 @@ class BUIDParser(object):
         buid_type = regex_result[0].upper()
         return buid_type in self.buid_types.values()
 
-    def format_buid_from_regex(self, regex_result,):        
+    def _format_buid_from_regex(self, regex_result,):        
         buid_type = regex_result[0].upper()
         buid_id = int(regex_result[1])
         if len(regex_result) >= 3 and regex_result[2]:
@@ -202,8 +203,20 @@ class BUIDParser(object):
     def format(self, buid_type, buid_id, component=None):
         regex_result = [buid_type, buid_id]
         if component is not None:
-            regex_result += [component]
-        return self.format_buid_from_regex(regex_result)
+            regex_result.append(self.validated_component(component))
+
+        return self._format_buid_from_regex(regex_result)
+
+
+    def validated_component(self, component):
+        if component[0] == '-':
+            module_logger.warning(f'Component should not contain \'-\' character! {component[1:]} not {component}! Fixed it.')
+            component = component[1:]
+            
+        if not self.buid_comp_only_regex.match(component):
+            raise ValueError(f'Component specifier is not valid! ({component})')
+
+        return component
 
 
     def attrib(self, *args, **kwds):

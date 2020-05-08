@@ -7,6 +7,7 @@ from pathlib import Path
 
 import barely_db
 from barely_db import *
+from barely_db.legacy import *
 
 
 
@@ -24,7 +25,7 @@ def test_config_saveload(scratch_base_path):
     ### Test save and reload
     base_path = scratch_base_path
 
-    config = BarelyDBConfig.from_legacy_default()   
+    config = LegacyDefaultBarelyDBConfig()
     config.save(base_path=base_path)
 
     config2 = BarelyDBConfig.load(base_path)
@@ -46,7 +47,7 @@ def test_sys_config_saveload(scratch_base_path):
     ### Test save and reload
     filename = str(Path(scratch_base_path).joinpath('temp_bdb_sysconig.json'))
 
-    sys_config = BarelyDBSystemConfig.from_legacy_default()   
+    sys_config = LegacyDefaultBarelyDBSystemConfig()
     sys_config.save(config_file=filename)
 
     sys_config2 = BarelyDBSystemConfig.load(filename)
