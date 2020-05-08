@@ -5,8 +5,10 @@ import os
 import logging
 import subprocess
 
+
 import attr
 import cattr
+import json
 import typing
 
 # import pandas as pd
@@ -24,7 +26,7 @@ from enum import Enum, IntEnum
 
 from .parser import *
 
-__all__ = ['open_in_explorer', 'FileManager', 'FileNameAnalyzer', 'copy_files_with_jupyter_button', 'serialize_to_file', 'RevisionFile', 'ClassFileSerializer']
+__all__ = ['open_in_explorer', 'FileManager', 'FileNameAnalyzer', 'copy_files_with_jupyter_button', 'serialize_to_file', 'RevisionFile', 'ClassFileSerializer', 'cattr_json_serialize']
 
 # from chunked_object import *
 # from message_dump import *
@@ -676,3 +678,24 @@ def serialize_to_file(base_file_identifier=None,
        
 
     return decorate_class
+
+
+
+
+
+def cattr_json_serialize(cls):
+    ''' A simple json serialize/deserialize class decorator. '''
+
+    def serialize(self):
+        return json.dumps(cattr.unstructure(self), indent=4)
+
+    @classmethod
+    def deserialize(cls, data):
+        return cattr.structure(json.loads(data), cls)
+
+    cls.serialize = serialize
+    cls.deserialize = deserialize
+    
+    return cls
+
+

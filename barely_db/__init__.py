@@ -31,7 +31,7 @@ else:
 # from .tools import *
 # Naming conventions: https://swift.org/documentation/api-design-guidelines/#strive-for-fluent-usage
 
-__all__ = ['BarelyDB', 'BarelyDBConfig', 'BarelyDBSystemConfig', 'BarelyDBEntity', 'FileManager', 'FileNameAnalyzer', 'serialize_to_file', 'open_in_explorer', 'ClassFileSerializer']
+__all__ = ['BarelyDB', 'BarelyDBConfig', 'BarelyDBSystemConfig', 'BarelyDBEntity', 'FileManager', 'FileNameAnalyzer', 'serialize_to_file', 'open_in_explorer', 'ClassFileSerializer', 'cattr_json_serialize']
 
 # create logger
 module_logger = logging.getLogger(__name__)
@@ -45,6 +45,7 @@ def _reload_module():
     current_module = sys.modules[__name__]
     module_logger.info('Reloading module %s' % __name__)
     importlib.reload(current_module)
+
 
 
 
@@ -145,6 +146,10 @@ class BarelyDB(BarelyDBLegacyInterfaceMixin):
     def get_entity(self, buid):
         return BarelyDBEntity(buid, self)
 
+    @property
+    def entities(self):
+        return list(self.entity_paths.keys())
+
 
 
 
@@ -187,19 +192,26 @@ class BarelyDB(BarelyDBLegacyInterfaceMixin):
 
         return str(file_abs_recover)
 
-    def load_entities(self, verbose=True):
-        # candidates = [x.relative_to(self.base_path) for x in self.base_path.iterdir() if x.is_dir()]
-        def iter_subdir(path, depth=0):
+    @staticmethod
+    def iter_subdir(path, depth=0):
+
+        def _iter_subdir(path, depth=0):
             for sub in path.iterdir():
                 if sub.is_dir():
                     if depth == 0:    
                         yield sub
                     else:
-                        for sub in iter_subdir(sub, depth-1):
+                        for sub in _iter_subdir(sub, depth-1):
                             yield sub
-       
+
+        return _iter_subdir(path, depth=depth)
+
+
+    def load_entities(self, verbose=True):
+        # candidates = [x.relative_to(self.base_path) for x in self.base_path.iterdir() if x.is_dir()]
+
         # candidates = [x for x in self.base_path.iterdir() if x.is_dir()]
-        candidates = iter_subdir(self.base_path, depth=self.path_depth)
+        candidates = self.iter_subdir(self.base_path, depth=self.path_depth)
         buid_p = self.buid_scan
             
         candidates_buid = [(buid_p(c), c) for c in candidates]
@@ -258,17 +270,7 @@ class BarelyDB(BarelyDBLegacyInterfaceMixin):
         entity_path = self.get_entity_path(buid)
         base_buid = self.buid_normalizer(buid)       
 
-        def iter_subdir(path, depth=0):
-            for sub in path.iterdir():
-                if sub.is_dir():
-                    if depth == 0:    
-                        yield sub
-                    else:
-                        for sub in iter_subdir(sub, depth-1):
-                            yield sub
-       
-        
-        candidates = iter_subdir(entity_path, depth=0)
+        candidates = self.iter_subdir(entity_path, depth=0)
 
         def component_parser(component_path):
             return self.buid_scan.parse_component(base_buid + component_path.name)
@@ -282,10 +284,6 @@ class BarelyDB(BarelyDBLegacyInterfaceMixin):
         
         # self.logger.debug(f'Components for {base_buid} found: {len(component_paths)}')
                 
-    @property
-    def entities(self):
-        return list(self.entity_paths.keys())
-
     def get_entity_path(self, buid):
         buid = self.buid_normalizer(buid)
         path = self.entity_paths[buid]
@@ -379,9 +377,6 @@ class BarelyDB(BarelyDBLegacyInterfaceMixin):
             self.load_entities()
 
         return buid_path
-
-
-
 
 
     def _get_files(self, buid, path, glob, must_contain_buid = False, output_as_str=True):

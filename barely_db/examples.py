@@ -48,7 +48,7 @@ def make_example_db(base_path):
                    buid_types={\
                         'ingrediences': 'IG',
                         'doughs': 'DG',
-                        'breads': 'BD',
+                        'breads': 'BR',
                         'equipment': 'EQ',
                         'customers': 'CU',
                         'documents': 'DOC',
@@ -75,7 +75,7 @@ def make_example_db(base_path):
     for name in ['flour_white_supplierA', 'flour_white_supplierB', 'flour_brown_supplierC', 'water', 'yeast_supplierK', 'yeast_supplierJ']:
         ent = bdb.create_new_entity(after='IG0001', name=name, reload=False)
 
-    buid_types = {'IG': 20, 'DG': 30, 'BD': 30, 'DOC': 10}
+    buid_types = {'IG': 20, 'DG': 30, 'BR': 30, 'DOC': 10}
     for bt, number in buid_types.items():
         for i in range(0, number):
             bdb.create_new_entity(after=bt+'0001', name=rw.random_word(), reload=False)
@@ -84,3 +84,20 @@ def make_example_db(base_path):
     bdb.load_entities()            
         
     return bdb
+
+
+
+@serialize_to_file(base_file_identifier='dough_recipe.json')
+@cattr_json_serialize
+@attr.s(frozen=True, kw_only=True)
+class DoughRecipe():
+    water = attr.ib(default='IG0004-B1')
+    flour = attr.ib(default='IG0001-B1')
+
+    w_water = attr.ib(default='1kg')
+    w_flour = attr.ib(default='1kg')
+
+
+
+
+    
