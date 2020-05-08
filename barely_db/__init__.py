@@ -4,7 +4,6 @@ import typing
 import attr
 import cattr
 
-
 import datetime
 import sys
 import os
@@ -22,7 +21,7 @@ from .configs import *
 from .parser import *
 from .file_management import *
 
-use_legacy = True
+use_legacy = False
 if use_legacy:
     from .legacy import BarelyDBLegacyInterfaceMixin, BarelyDBEntityLegacyInterfaceMixin
 else:
@@ -55,7 +54,7 @@ class BarelyDB(BarelyDBLegacyInterfaceMixin):
 
     auto_reload_components = None
 
-    buid_type_paths = None
+    buid_type_paths = {}
 
     path_converter = Path
 
@@ -172,7 +171,7 @@ class BarelyDB(BarelyDBLegacyInterfaceMixin):
         return filename
 
     def relative_file(self, filename):
-        filename = Path(self.resolve_file(filename))
+        filename = Path(self.resolved_file(filename))
         file_rel = Path(filename).relative_to(self.base_path).as_posix()
         return str(file_rel)
 
@@ -188,7 +187,7 @@ class BarelyDB(BarelyDBLegacyInterfaceMixin):
 
         return str(file_abs_recover)
 
-    def load_entities(self):
+    def load_entities(self, verbose=True):
         # candidates = [x.relative_to(self.base_path) for x in self.base_path.iterdir() if x.is_dir()]
         def iter_subdir(path, depth=0):
             for sub in path.iterdir():
@@ -199,23 +198,34 @@ class BarelyDB(BarelyDBLegacyInterfaceMixin):
                         for sub in iter_subdir(sub, depth-1):
                             yield sub
        
-        
         # candidates = [x for x in self.base_path.iterdir() if x.is_dir()]
-        
         candidates = iter_subdir(self.base_path, depth=self.path_depth)
         buid_p = self.buid_scan
             
         candidates_buid = [(buid_p(c), c) for c in candidates]
-        found_buid = [list(t) for t in zip(*candidates_buid)]
-        found_buid = found_buid[0]
-        duplicate_buid = [item for item, count in collections.Counter(found_buid).items() if count > 1]
-        duplicate_buid = [i for i in duplicate_buid if i]
-        if duplicate_buid:
-            self.logger.error(f'Following entities have multiple paths/folders: {duplicate_buid}')
+        found_buids = [buid for buid, path in candidates_buid if buid is not None]
+        self._duplicate_buid_count = collections.Counter(found_buids)
+        self._duplicate_buid = [item for item, count in self._duplicate_buid_count.items() if item and count > 1]
 
         self.entity_paths = {buid: path for buid, path in candidates_buid if buid is not None}
         self.logger.info(f'Entities found: {len(self.entity_paths)}')
 
+        self.check_for_duplicates(verbose=verbose)
+        self.refresh_buid_type_paths(verbose=verbose)
+
+
+    def check_for_duplicates(self, verbose=True):
+        # Check for duplicates
+        # found_buid = self.entity_paths.keys()
+        duplicate_buid = self._duplicate_buid
+        
+        if duplicate_buid:
+            self.logger.error(f'Following entities have multiple paths/folders: {duplicate_buid}')
+
+        return bool(duplicate_buid)
+
+
+    def refresh_buid_type_paths(self, verbose=True):
         # Scan all paths and determine target directories for each buid type!
         self.buid_type_paths = {}
 
@@ -239,8 +249,9 @@ class BarelyDB(BarelyDBLegacyInterfaceMixin):
                     # if this is the first entity of this type use the parent directory
                     self.buid_type_paths[buid_type] = entity_path.parent
 
-        for buid_type, buid_path in self.buid_type_paths.items():
-            self.logger.info(f'{buid_type} --> {buid_path}')
+        if verbose:
+            for buid_type, buid_path in self.buid_type_paths.items():
+                self.logger.info(f'{buid_type} --> {buid_path}')
 
 
     def load_components(self, buid):
@@ -283,7 +294,12 @@ class BarelyDB(BarelyDBLegacyInterfaceMixin):
     
     def get_entity_name(self, buid):
         path = self.get_entity_path(buid)
-        return Path(path).parts[-1]
+        name_raw = Path(path).parts[-1]
+        name_raw = name_raw.replace(buid, '')
+        if name_raw[0] in [' ', '_']:
+            name_raw = name_raw[1:]
+
+        return name_raw
 
     def get_component_paths(self, buid):
         buid = self.buid_normalizer(buid)
@@ -306,7 +322,7 @@ class BarelyDB(BarelyDBLegacyInterfaceMixin):
 
     def create_new_entity(self, *, after, name, reload=True):
         new_buid = self._get_free_buid(after)[0]
-        self._create_entity_path(new_buid, name, reload=True)
+        self._create_entity_path(new_buid, name, reload=reload)
 
         return self[new_buid]
 
@@ -346,6 +362,9 @@ class BarelyDB(BarelyDBLegacyInterfaceMixin):
             # entity does not exist
             pass
 
+        if buid_type not in self.buid_type_paths:
+            raise ValueError(f'Do not know where to put entities of type {buid_type}!')
+
         # create new path
         buid_base_path = Path(self.buid_type_paths[buid_type])
         buid_path = buid_base_path.joinpath(f'{buid}_{name}')
@@ -353,6 +372,8 @@ class BarelyDB(BarelyDBLegacyInterfaceMixin):
         buid_path = buid_path.absolute().resolve()
         
         buid_path.mkdir(parents=False, exist_ok=True)
+
+        self.entity_paths[buid] = Path(buid_path)
 
         if reload:
             self.load_entities()
@@ -423,11 +444,20 @@ class BarelyDBEntity(BarelyDBEntityLegacyInterfaceMixin):
         self.component = buid_comp_p.parse_component(buid)
 
     def __repr__(self):
-        return f'{self.__class__.__qualname__}(\'{self.buid_with_component}\')'
-        # if self.component is None:
-        #     return f'{self.__class__.__qualname__}(\'{self.buid}\')'
-        # else:
-        #     return f'{self.__class__.__qualname__}(\'{self.buid}-{self.component}\')'
+        try:
+            name = f'\'{self.name}\''
+
+            components = self.components
+            if len(components) > 6:
+                comp = f', {len(components)} components'
+            else:
+                comp = f', components={components}' if components else ''
+
+        except KeyError:
+            name = '<does not exist!>'
+            comp = ''
+
+        return f'{self.__class__.__qualname__}(\'{self.buid_with_component}\', {name}{comp})'
     
     def __eq__(self,other):
         return self.buid_with_component == other.buid_with_component
@@ -449,7 +479,7 @@ class BarelyDBEntity(BarelyDBEntityLegacyInterfaceMixin):
         return self._bdb
 
     @property
-    def parent_entity(self):
+    def parent(self):
         return BarelyDBEntity(self.buid_entity, self.bdb)
     
     @property
@@ -469,6 +499,10 @@ class BarelyDBEntity(BarelyDBEntityLegacyInterfaceMixin):
         return self.bdb.get_component_paths(self.buid_entity)      
 
     @property
+    def components(self):
+        return list(self.component_paths.keys())
+
+    @property
     def path(self):
         return self.entity_path if self.component is None else self.component_path
 
@@ -485,7 +519,6 @@ class BarelyDBEntity(BarelyDBEntityLegacyInterfaceMixin):
         return self.bdb._get_files(self.buid_entity, self.entity_path, glob, must_contain_buid=must_contain_buid, output_as_str=output_as_str)
 
     def component_files(self, glob, must_contain_buid = False, output_as_str=True):
-        ### XXX TODO should this be self.buid_with_component
         return self.bdb._get_files(self.buid_with_component, self.component_path, glob, must_contain_buid=must_contain_buid, output_as_str=output_as_str)
 
 
@@ -540,10 +573,10 @@ class BarelyDBEntity(BarelyDBEntityLegacyInterfaceMixin):
         #     raise ValueError(f'Cannot create component path if no component is specified ({self.buid_with_component})!')
 
         component = self.bdb.buid_normalizer.validated_component(component)
-        
+
         existing_path = self.component_paths.get(component, None)
         if existing_path:
-            self.logger.warning(f'Component path already exists! {str(existing_path)}')
+            self.logger.warning(f'Component {component} already exists! {str(existing_path)}')
             return existing_path
 
         base_bath = self.bdb.get_entity_path(self.buid_entity)
@@ -553,9 +586,9 @@ class BarelyDBEntity(BarelyDBEntityLegacyInterfaceMixin):
 
         component_path = base_bath.joinpath(path_name)
         component_path.mkdir(parents=False, exist_ok=True)            
-        
+
         self.bdb.load_components(self.buid)
-        
+
         return component_path
 
 

@@ -1,0 +1,15 @@
+{
+    "default_base_path": {
+        "battrion_manufacturing": [
+            "G:\\Team Drives\\Database",
+            "G:\\Shared drives\\Database",
+            "/Volumes/GoogleDrive/Team Drives/Database",
+            "/Volumes/GoogleDrive/Teamablagen/Database",
+            "/Volumes/GoogleDrive/Geteilte Ablagen/Database",
+            "G:\\Geteilte Ablagen\\Database",
+            "G:\\Drive partag\u00e9s\\Database",
+            "/home/pi/GoogleDrive/database",
+            "/home/jovyan/database"
+        ]
+    }
+}

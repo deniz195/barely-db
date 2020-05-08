@@ -1,0 +1,328 @@
+buid: WB3001-P1
+name: WB3001_SL_LGA1
+operator: unknown operator
+measurement_date: unknown measurement date
+comment: describe the measurement here
+regions:
+- buid: WB3001-P1
+  name:
+  operator: unknown operator
+  measurement_date: unknown measurement date
+  comment: describe the measurement here
+  region_name: A
+  qarea_neg: !unit 5.71959+/-0.12105 mAh / cm ** 2
+  qarea_1st_neg: !unit 6.05311+/-0.12811 mAh / cm ** 2
+  ALM: !unit (16.5991 +/- 0.4079) mg / cm ** 2
+  X: !unit (16.3729 +/- 0.7797) mg / cm ** 2
+  Y: !unit (16.9306 +/- 0.4977) mg / cm ** 2
+  Z: !unit (16.4939 +/- 0.5053) mg / cm ** 2
+  XTM_rel: !unit (0.74621 +/- 5.73521) percent
+  FFM_rel: !unit (3.06860 +/- 4.20269) percent
+  dens_meas:
+  ATM_web:
+  XTM_web_rel:
+  FFM_web_rel:
+  ALM_coat:
+  X_coat:
+  Y_coat:
+  Z_coat:
+  XTM_coat_rel:
+  FFM_coat_rel:
+  dens_coat_meas:
+  ATM_web_coat:
+  XTM_web_coat_rel:
+  FFM_web_coat_rel:
+  ATM_dlt: !unit 173.168 um
+  XTM_dlt_rel: !unit 3.83096 percent
+  FFM_dlt_rel: !unit 1.81077 percent
+  ALM_dlt_dw_std_rel: !unit 0.975527 percent
+  ATM_wlt: !unit 250.712 um
+  XTM_wlt_rel: !unit -3.52611 percent
+  FFM_wlt_rel: !unit -2.5945 percent
+  ALM_wlt_dw_std_rel: !unit 1.50592 percent
+  dens_dlt: !unit 0.981172 g / ml
+  ALM_wlt: !unit 16.9908 mg / cm ** 2
+  F_adh_meas: !unit (1.70000 +/- 2.40416) mN / mm
+  F_adh_meas_q10: !unit (1.30000 +/- 1.83848) mN / mm
+  F_adh_meas_q50: !unit (1.70000 +/- 2.40416) mN / mm
+  F_adh_meas_q90: !unit (2.23333 +/- 3.15841) mN / mm
+  nm_meas: !unit '(14.0000 +/- 1.8221) '
+  d_AB_meas:
+  Lcolor_neg:
+  Lcolor_coat_neg:
+- buid: WB3001-P1
+  name:
+  operator: unknown operator
+  measurement_date: unknown measurement date
+  comment: describe the measurement here
+  region_name: B
+  qarea_neg: !unit 5.84257+/-0.14127 mAh / cm ** 2
+  qarea_1st_neg: !unit 6.18326+/-0.14951 mAh / cm ** 2
+  ALM: !unit (16.9560 +/- 0.5534) mg / cm ** 2
+  X: !unit (16.9329 +/- 0.4694) mg / cm ** 2
+  Y: !unit (17.0810 +/- 0.6739) mg / cm ** 2
+  Z: !unit (16.8541 +/- 0.9158) mg / cm ** 2
+  XTM_rel: !unit (-0.48732 +/- 6.35246) percent
+  FFM_rel: !unit (1.15739 +/- 5.23410) percent
+  dens_meas:
+  ATM_web:
+  XTM_web_rel:
+  FFM_web_rel:
+  ALM_coat:
+  X_coat:
+  Y_coat:
+  Z_coat:
+  XTM_coat_rel:
+  FFM_coat_rel:
+  dens_coat_meas:
+  ATM_web_coat:
+  XTM_web_coat_rel:
+  FFM_web_coat_rel:
+  ATM_dlt: !unit 327.236 um
+  XTM_dlt_rel: !unit -7.81934 percent
+  FFM_dlt_rel: !unit 1.99488 percent
+  ALM_dlt_dw_std_rel: !unit 1.8904 percent
+  ATM_wlt: !unit 248.948 um
+  XTM_wlt_rel: !unit -1.59587 percent
+  FFM_wlt_rel: !unit -4.51869 percent
+  ALM_wlt_dw_std_rel: !unit 1.49243 percent
+  dens_dlt: !unit 0.515567 g / ml
+  ALM_wlt: !unit 16.8712 mg / cm ** 2
+  F_adh_meas: !unit (2.36666 +/- 3.34697) mN / mm
+  F_adh_meas_q10: !unit (1.72334 +/- 2.43716) mN / mm
+  F_adh_meas_q50: !unit (2.36666 +/- 3.34697) mN / mm
+  F_adh_meas_q90: !unit (3.03334 +/- 4.28978) mN / mm
+  nm_meas: !unit '(10.5400 +/- 0.0250) '
+  d_AB_meas:
+  Lcolor_neg:
+  Lcolor_coat_neg:
+- buid: WB3001-P1
+  name:
+  operator: unknown operator
+  measurement_date: unknown measurement date
+  comment: describe the measurement here
+  region_name: M
+  qarea_neg: !unit 5.78106+/-0.18872 mAh / cm ** 2
+  qarea_1st_neg: !unit 6.11817+/-0.19973 mAh / cm ** 2
+  ALM: !unit (16.7775 +/- 0.5477) mg / cm ** 2
+  X: !unit (16.6529 +/- 0.7556) mg / cm ** 2
+  Y: !unit (17.0058 +/- 0.6019) mg / cm ** 2
+  Z: !unit (16.6740 +/- 0.7822) mg / cm ** 2
+  XTM_rel:
+  FFM_rel:
+  dens_meas:
+  ATM_web:
+  XTM_web_rel:
+  FFM_web_rel:
+  ALM_coat:
+  X_coat:
+  Y_coat:
+  Z_coat:
+  XTM_coat_rel:
+  FFM_coat_rel:
+  dens_coat_meas:
+  ATM_web_coat:
+  XTM_web_coat_rel:
+  FFM_web_coat_rel:
+  ATM_dlt:
+  XTM_dlt_rel:
+  FFM_dlt_rel:
+  ALM_dlt_dw_std_rel:
+  ATM_wlt: !unit (249.830 +/- 1.247) um
+  XTM_wlt_rel:
+  FFM_wlt_rel:
+  ALM_wlt_dw_std_rel:
+  dens_dlt:
+  ALM_wlt: !unit (16.9310 +/- 0.0845) mg / cm ** 2
+  F_adh_meas: !unit (2.03333 +/- 2.95183) mN / mm
+  F_adh_meas_q10: !unit (1.51167 +/- 2.17933) mN / mm
+  F_adh_meas_q50: !unit (2.03333 +/- 2.95183) mN / mm
+  F_adh_meas_q90: !unit (2.63333 +/- 3.80906) mN / mm
+  nm_meas: !unit '(12.2700 +/- 2.7652) '
+  d_AB_meas:
+  Lcolor_neg:
+  Lcolor_coat_neg:
+- buid: WB3001-P1
+  name:
+  operator: unknown operator
+  measurement_date: unknown measurement date
+  comment: describe the measurement here
+  region_name: AS
+  qarea_neg: !unit 5.79553+/-0.08604 mAh / cm ** 2
+  qarea_1st_neg: !unit 6.13348+/-0.09106 mAh / cm ** 2
+  ALM: !unit (16.8195 +/- 0.2497) mg / cm ** 2
+  X: !unit (16.8343 +/- 0.4419) mg / cm ** 2
+  Y: !unit (17.1057 +/- 0.4358) mg / cm ** 2
+  Z: !unit (16.5185 +/- 0.4194) mg / cm ** 2
+  XTM_rel: !unit (-1.94929 +/- 3.76075) percent
+  FFM_rel: !unit (2.64981 +/- 3.28200) percent
+  dens_meas:
+  ATM_web:
+  XTM_web_rel:
+  FFM_web_rel:
+  ALM_coat:
+  X_coat:
+  Y_coat:
+  Z_coat:
+  XTM_coat_rel:
+  FFM_coat_rel:
+  dens_coat_meas:
+  ATM_web_coat:
+  XTM_web_coat_rel:
+  FFM_web_coat_rel:
+  ATM_dlt:
+  XTM_dlt_rel:
+  FFM_dlt_rel:
+  ALM_dlt_dw_std_rel:
+  ATM_wlt:
+  XTM_wlt_rel:
+  FFM_wlt_rel:
+  ALM_wlt_dw_std_rel:
+  dens_dlt:
+  ALM_wlt:
+  F_adh_meas: !unit 3.4 mN / mm
+  F_adh_meas_q10: !unit 2.6 mN / mm
+  F_adh_meas_q50: !unit 3.4 mN / mm
+  F_adh_meas_q90: !unit 4.46667 mN / mm
+  nm_meas: !unit '(13.7000 +/- 2.2000) '
+  d_AB_meas:
+  Lcolor_neg:
+  Lcolor_coat_neg:
+- buid: WB3001-P1
+  name:
+  operator: unknown operator
+  measurement_date: unknown measurement date
+  comment: describe the measurement here
+  region_name: AE
+  qarea_neg: !unit 5.64364+/-0.09503 mAh / cm ** 2
+  qarea_1st_neg: !unit 5.97274+/-0.10057 mAh / cm ** 2
+  ALM: !unit (16.3787 +/- 0.2758) mg / cm ** 2
+  X: !unit (15.9116 +/- 0.4112) mg / cm ** 2
+  Y: !unit (16.7554 +/- 0.4276) mg / cm ** 2
+  Z: !unit (16.4692 +/- 0.5765) mg / cm ** 2
+  XTM_rel: !unit (3.44171 +/- 4.37146) percent
+  FFM_rel: !unit (3.48739 +/- 3.42699) percent
+  dens_meas:
+  ATM_web:
+  XTM_web_rel:
+  FFM_web_rel:
+  ALM_coat:
+  X_coat:
+  Y_coat:
+  Z_coat:
+  XTM_coat_rel:
+  FFM_coat_rel:
+  dens_coat_meas:
+  ATM_web_coat:
+  XTM_web_coat_rel:
+  FFM_web_coat_rel:
+  ATM_dlt:
+  XTM_dlt_rel:
+  FFM_dlt_rel:
+  ALM_dlt_dw_std_rel:
+  ATM_wlt:
+  XTM_wlt_rel:
+  FFM_wlt_rel:
+  ALM_wlt_dw_std_rel:
+  dens_dlt:
+  ALM_wlt:
+  F_adh_meas: !unit 0 mN / mm
+  F_adh_meas_q10: !unit 0 mN / mm
+  F_adh_meas_q50: !unit 0 mN / mm
+  F_adh_meas_q90: !unit 0 mN / mm
+  nm_meas: !unit '(14.3000 +/- 1.2000) '
+  d_AB_meas:
+  Lcolor_neg:
+  Lcolor_coat_neg:
+- buid: WB3001-P1
+  name:
+  operator: unknown operator
+  measurement_date: unknown measurement date
+  comment: describe the measurement here
+  region_name: BS
+  qarea_neg: !unit 5.96272+/-0.08707 mAh / cm ** 2
+  qarea_1st_neg: !unit 6.31042+/-0.09215 mAh / cm ** 2
+  ALM: !unit (17.3047 +/- 0.2527) mg / cm ** 2
+  X: !unit (17.0415 +/- 0.4308) mg / cm ** 2
+  Y: !unit (17.4461 +/- 0.4412) mg / cm ** 2
+  Z: !unit (17.4264 +/- 0.4410) mg / cm ** 2
+  XTM_rel: !unit (2.37569 +/- 3.80555) percent
+  FFM_rel: !unit (1.30968 +/- 3.32228) percent
+  dens_meas:
+  ATM_web:
+  XTM_web_rel:
+  FFM_web_rel:
+  ALM_coat:
+  X_coat:
+  Y_coat:
+  Z_coat:
+  XTM_coat_rel:
+  FFM_coat_rel:
+  dens_coat_meas:
+  ATM_web_coat:
+  XTM_web_coat_rel:
+  FFM_web_coat_rel:
+  ATM_dlt:
+  XTM_dlt_rel:
+  FFM_dlt_rel:
+  ALM_dlt_dw_std_rel:
+  ATM_wlt:
+  XTM_wlt_rel:
+  FFM_wlt_rel:
+  ALM_wlt_dw_std_rel:
+  dens_dlt:
+  ALM_wlt:
+  F_adh_meas: !unit 0 mN / mm
+  F_adh_meas_q10: !unit 0 mN / mm
+  F_adh_meas_q50: !unit 0 mN / mm
+  F_adh_meas_q90: !unit 0 mN / mm
+  nm_meas:
+  d_AB_meas:
+  Lcolor_neg:
+  Lcolor_coat_neg:
+- buid: WB3001-P1
+  name:
+  operator: unknown operator
+  measurement_date: unknown measurement date
+  comment: describe the measurement here
+  region_name: BE
+  qarea_neg: !unit 5.72241+/-0.08604 mAh / cm ** 2
+  qarea_1st_neg: !unit 6.05610+/-0.09106 mAh / cm ** 2
+  ALM: !unit (16.6073 +/- 0.2497) mg / cm ** 2
+  X: !unit (16.8244 +/- 0.4561) mg / cm ** 2
+  Y: !unit (16.7159 +/- 0.4249) mg / cm ** 2
+  Z: !unit (16.2817 +/- 0.4153) mg / cm ** 2
+  XTM_rel: !unit (-3.35033 +/- 3.80772) percent
+  FFM_rel: !unit (1.00510 +/- 3.24081) percent
+  dens_meas:
+  ATM_web:
+  XTM_web_rel:
+  FFM_web_rel:
+  ALM_coat:
+  X_coat:
+  Y_coat:
+  Z_coat:
+  XTM_coat_rel:
+  FFM_coat_rel:
+  dens_coat_meas:
+  ATM_web_coat:
+  XTM_web_coat_rel:
+  FFM_web_coat_rel:
+  ATM_dlt:
+  XTM_dlt_rel:
+  FFM_dlt_rel:
+  ALM_dlt_dw_std_rel:
+  ATM_wlt:
+  XTM_wlt_rel:
+  FFM_wlt_rel:
+  ALM_wlt_dw_std_rel:
+  dens_dlt:
+  ALM_wlt:
+  F_adh_meas: !unit 4.73333 mN / mm
+  F_adh_meas_q10: !unit 3.44667 mN / mm
+  F_adh_meas_q50: !unit 4.73333 mN / mm
+  F_adh_meas_q90: !unit 6.06667 mN / mm
+  nm_meas: !unit '(10.5400 +/- 0.0250) '
+  d_AB_meas:
+  Lcolor_neg:
+  Lcolor_coat_neg:

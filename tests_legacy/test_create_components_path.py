@@ -12,7 +12,7 @@ def test_create_entity(bdb):
     web = bdb.get_entity('WB9042')
 
     try:
-        existing_path = web.entity_path
+        existing_path = web.get_entity_path()
         shutil.rmtree(existing_path, ignore_errors=True)
         assert(not existing_path.exists())
     except KeyError:
@@ -20,11 +20,10 @@ def test_create_entity(bdb):
         pass
 
     # with pytest.deprecated_call():
-    new_entity = bdb.create_new_entity(after=web.buid_with_component, name='great_web')
-    new_entity_path = new_entity.path
+    new_entity_path = web.create_entity_path(path_comment='some_web')
     assert(new_entity_path.exists())
 
-    new_entity_path = web.entity_path
+    new_entity_path = web.get_entity_path()
     assert(new_entity_path.exists())
 
     shutil.rmtree(new_entity_path, ignore_errors=True)
@@ -43,12 +42,14 @@ def check_folder_contains_component(folder_path, component_name):
 
 def test_create_components(bdb):   
     ent = bdb.get_entity('WB3001')
-    ent.create_component(component='P1', name='cool_component')
+    # with pytest.deprecated_call():
+    #     ent.create_component_path('P1', path_comment='some_component')
+    ent.create_component_path('P1', path_comment='some_component')
 
     component_name ='T1'
     component_comment = 'some_component'
     folder = 'barely-db://Webs/WB3001_SL_LGA1'
-    folder_path = Path(bdb.resolved_file(folder))
+    folder_path = Path(bdb.resolve_file(folder))
 
     contains_component,path_to_component = check_folder_contains_component(folder_path, component_name)
     if contains_component:
@@ -57,7 +58,7 @@ def test_create_components(bdb):
     contains_component,path_to_component = check_folder_contains_component(folder_path, component_name)
     assert(not contains_component)
 
-    ent.create_component(component=component_name, name=component_comment)
+    ent.create_component_path(component_name, path_comment=component_comment)
 
     contains_component,path_to_component = check_folder_contains_component(folder_path, component_name)
     assert(contains_component)

@@ -69,7 +69,7 @@ def test_serialize_to_file(bdb):
     print(x1.serialize())
 
     test_ent = bdb.get_entity('WB9001-Y9')
-    base_path = test_ent.component_path
+    base_path = test_ent.get_component_path()
     print(base_path)
 
     fm = test_ent.make_file_manager()
@@ -169,50 +169,3 @@ def test_serialize_to_file(bdb):
     
     x5_loaded = test_ent.load_object(X5)
     assert(x5_loaded.serialize() == x5.serialize())
-
-
-
-
-def test_revision_to_bdb_old(bdb):
-    # test revision files
-
-    from unitdoc import UnitDocRegistry
-    udr = UnitDocRegistry()
-
-    @serialize_to_file(base_file_identifier='test_class_c', suffix='.yaml')
-    @udr.serialize()
-    @attr.s(frozen=True, kw_only=True)
-    class C():
-        name = attr.ib()
-        x = udr.attrib(default='1m')
-
-    
-
-    
-    web = bdb.get_entity('WB9002')
-    try:
-        before = [f for f in os.listdir(web.path.joinpath('.bdb_old'))]
-    except FileNotFoundError:
-        before = []
-
-    no_revisions = 6
-
-    some_ob = C(name=('object'+str(0)))
-    fn = C.get_serialization_filename(web)
-
-    if Path(fn).exists():
-        expected_revisions = no_revisions
-    else:
-        expected_revisions = no_revisions -1
-
-    for i in range(no_revisions):
-        some_ob = C(name=('object'+str(i)))
-        fn_obj = web.save_object(some_ob)
-        assert(Path(fn_obj).exists())
-    
-    after = [f for f in os.listdir(web.path.joinpath('.bdb_old'))]
-    assert(len(before)==len(after)-expected_revisions)
-
-    
-
-

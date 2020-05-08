@@ -98,9 +98,14 @@ class BarelyDBConfig:
 
         return str(config_file)
 
-    def save(self, base_path):
-        config_file = self.resolve_file(base_path)
+    def save(self, base_path, create_path=False):
+        base_path = Path(base_path)
+        
+        if create_path:
+            base_path.mkdir(parents=True, exist_ok=True)
 
+        config_file = self.resolve_file(base_path)
+        
         self_dict = attr.asdict(self)
 
         with open(config_file, 'w') as f:

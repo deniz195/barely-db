@@ -6,18 +6,18 @@ import barely_db
 from barely_db import *
 
 
-def test_db_resolved_filename(bdb):
+def test_db_resolve_filename(bdb):
     # check which OS it is
     # depending on OS different test
     if os.name.lower == "posix":
         fn = '/Volumes/GoogleDrive/Teamablagen/Database/Webs/WB3001_SL_LGA1/-P1/raw_peelforce/P1-BE_peelforce_190411.tsv.plot.png'
     else:
         fn = 'G:\\My Drive\\Battrion_AG\\DATABASE\\Webs\\WB3001_SL_LGA1\\-P1\\raw_peelforce\\P1-BE_peelforce_190411.tsv.plot.png'
-    fn_r = bdb.resolved_file(fn)     
+    fn_r = bdb.resolve_file(fn)     
     assert(Path(fn_r).exists())
     
     fn = 'barelydb://Webs/WB3001_SL_LGA1/-P1/raw_peelforce/P1-BE_peelforce_190411.tsv.plot.png'
-    fn_r = bdb.resolved_file(fn)     
+    fn_r = bdb.resolve_file(fn)     
     assert(Path(fn_r).exists())
 
     fn = 'barelydb://Webs/WB3001_SL_LGA1/-P1/raw_peelforce/P1-BE_peelforce_190411.tsv.plot.png'
