@@ -21,7 +21,7 @@ from .configs import *
 from .parser import *
 from .file_management import *
 
-use_legacy = False
+use_legacy = True
 if use_legacy:
     from .legacy import BarelyDBLegacyInterfaceMixin, BarelyDBEntityLegacyInterfaceMixin
 else:
