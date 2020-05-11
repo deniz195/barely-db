@@ -468,7 +468,7 @@ class ClassFileSerializer(object):
     def get_filename_regex(self, file_identifier=None):
         rg = r''
         if self.prepend_buid:
-            rg += BUIDParser.buid_comp_regex.pattern+'_'
+            rg += GenericBUIDParser.buid_comp_regex.pattern+'_'
         if self.prefix:
             rg += self.prefix
         if file_identifier:

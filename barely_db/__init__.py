@@ -96,7 +96,7 @@ class BarelyDB(BarelyDBLegacyInterfaceMixin):
         self.entity_properties = {}
         self.component_paths = {}
 
-        self._MyBUIDParser = BUIDParser.create_class(self.config.buid_types)
+        self._MyBUIDParser = GenericBUIDParser.create_class(self.config.buid_types)
 
         self.buid_normalizer = self.BUIDParser(ignore_unknown=True, 
                                           mode = 'unique', 

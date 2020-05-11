@@ -17,7 +17,7 @@ from pathlib import Path, PureWindowsPath
 from collections import OrderedDict
 from collections.abc import Sequence, Container
 
-__all__ = ['BUIDParser']
+__all__ = ['GenericBUIDParser']
 
 # create logger
 module_logger = logging.getLogger(__name__)
@@ -32,7 +32,7 @@ def _reload_module():
     importlib.reload(current_module)
 
 
-class BUIDParser(object):
+class GenericBUIDParser(object):
     # class variables
     buid_types = {}
 
@@ -45,7 +45,7 @@ class BUIDParser(object):
 
     @classmethod
     def create_class(cls, new_buid_types):
-        class _CustomBUIDParser(BUIDParser):
+        class _CustomBUIDParser(GenericBUIDParser):
             buid_types = new_buid_types
         
         return _CustomBUIDParser
