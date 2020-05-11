@@ -61,7 +61,7 @@ def CBUIDParser():
         "documents": "DOC"
     }
 
-    CBUIDParser = barely_db.BUIDParser.create_class(buid_types)
+    CBUIDParser = barely_db.GenericBUIDParser.create_class(buid_types)
 
     return CBUIDParser
 

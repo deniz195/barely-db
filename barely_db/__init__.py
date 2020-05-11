@@ -21,7 +21,7 @@ from .configs import *
 from .parser import *
 from .file_management import *
 
-use_legacy = False
+use_legacy = True
 if use_legacy:
     from .legacy import BarelyDBLegacyInterfaceMixin, BarelyDBEntityLegacyInterfaceMixin
 else:
@@ -96,7 +96,7 @@ class BarelyDB(BarelyDBLegacyInterfaceMixin):
         self.entity_properties = {}
         self.component_paths = {}
 
-        self._MyBUIDParser = BUIDParser.create_class(self.config.buid_types)
+        self._MyBUIDParser = GenericBUIDParser.create_class(self.config.buid_types)
 
         self.buid_normalizer = self.BUIDParser(ignore_unknown=True, 
                                           mode = 'unique', 
