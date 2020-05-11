@@ -137,6 +137,9 @@ class BarelyDBEntityLegacyInterfaceMixin:
         return entity_path
 
     def create_component_path(self, component, path_comment):
+        if component is None:
+            component = self.component
+            
         self.logger.warning('DEPRECATED: .create_component_path()! Only entities that exist in the database should be instantiated!. Use BarelyDBEntity.create_component() instead!')
         return self.create_component(component=component, name=path_comment)
 
@@ -171,7 +174,7 @@ class BarelyDBEntityLegacyInterfaceMixin:
     # Backwards compatibility
     def get_parent_entity(self):
         self.logger.warning('DEPRECATED: get_parent_entity use parent_entity instead!')
-        return self.parent_entity
+        return self.parent
 
     # Backwards compatibility
     def get_entity_path(self):
