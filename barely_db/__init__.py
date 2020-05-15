@@ -58,12 +58,19 @@ class BarelyDB(BarelyDBLegacyInterfaceMixin):
     buid_type_paths = {}
 
     path_converter = Path
+    long_windows_path_limit = None
 
     _MyBUIDParser = None
 
-    def __init__(self, name=None, base_path=None, path_depth=None, auto_reload_components = True, path_converter = Path):
+    def __init__(self, name=None, base_path=None, 
+                    path_depth=None, 
+                    auto_reload_components = True, 
+                    path_converter = Path, 
+                    long_windows_path_limit = 150):
+
         self.logger = module_logger
 
+        self.long_windows_path_limit  = long_windows_path_limit 
         self.path_converter = path_converter
 
         # if base path is None, check default base path for existance and
@@ -172,6 +179,10 @@ class BarelyDB(BarelyDBLegacyInterfaceMixin):
             # check it is the other way around        
             elif (not is_windows) and (not is_URL_like) and ('\\' in base_path_str):
                 filename = filename.replace("/","\\")
+
+        # To facilitate working on windows, we will extend windows paths when they 
+        # are long. see https://bugs.python.org/issue18199#msg260076
+        filename = extend_long_path_on_windows(filename, self.long_windows_path_limit)
 
         return filename
 
@@ -557,6 +568,7 @@ class BarelyDBEntity(BarelyDBEntityLegacyInterfaceMixin):
                             secondary_data_paths = secondary_data_paths,
                             auto_string = auto_string, 
                             auto_remove_duplicates = auto_remove_duplicates,
+                            long_windows_path_limit = self.bdb.long_windows_path_limit,
                            ))
         
         return FileManager(**options)

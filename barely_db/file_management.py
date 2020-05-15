@@ -26,7 +26,7 @@ from enum import Enum, IntEnum
 
 from .parser import *
 
-__all__ = ['open_in_explorer', 'FileManager', 'FileNameAnalyzer', 'copy_files_with_jupyter_button', 'serialize_to_file', 'RevisionFile', 'ClassFileSerializer', 'cattr_json_serialize']
+__all__ = ['extend_long_path_on_windows', 'open_in_explorer', 'FileManager', 'FileNameAnalyzer', 'copy_files_with_jupyter_button', 'serialize_to_file', 'RevisionFile', 'ClassFileSerializer', 'cattr_json_serialize']
 
 # from chunked_object import *
 # from message_dump import *
@@ -43,6 +43,15 @@ def _reload_module():
     module_logger.info('Reloading module %s' % __name__)
     importlib.reload(current_module)
 
+
+def extend_long_path_on_windows(fn, long_windows_path_limit=150):
+    prefix = '\\\\?\\'
+
+    if os.name == 'nt':
+        if fn[0:4] != prefix and len(fn) > long_windows_path_limit:
+            return prefix + fn
+
+    return fn
     
 
 def open_in_explorer(path, start=False):
@@ -67,7 +76,10 @@ class FileManager(object):
                  export_prefix = '',
                  secondary_data_paths = [],
                  auto_string = True, 
-                 auto_remove_duplicates = True):
+                 auto_remove_duplicates = True,
+                 long_windows_path_limit = 150):
+
+        self.long_windows_path_limit = long_windows_path_limit
         
         self.set_raw_path(raw_path)
         self.set_export_path(export_path, export_prefix)
@@ -79,14 +91,14 @@ class FileManager(object):
         if not isinstance(raw_path, list):
             raw_path = [raw_path]
 
-        self.raw_path = [Path(p) for p in raw_path]
+        self.raw_path = [Path(extend_long_path_on_windows(str(p), self.long_windows_path_limit)) for p in raw_path]
 
         for p in self.raw_path:
             if not p.exists():
                 raise FileNotFoundError(str(p))        
         
     def set_export_path(self, export_path, export_prefix = ''):
-        self.export_prefix = export_prefix
+        self.export_prefix = extend_long_path_on_windows(str(export_prefix), self.long_windows_path_limit)
         self.export_path = Path(export_path)
         self.export_path.mkdir(parents=True, exist_ok=True)
 
@@ -94,7 +106,7 @@ class FileManager(object):
         if not isinstance(secondary_data_paths, list):
             secondary_data_paths = [secondary_data_paths]
 
-        self.secondary_data_paths = [Path(p) for p in secondary_data_paths]        
+        self.secondary_data_paths = [Path(extend_long_path_on_windows(str(p), self.long_windows_path_limit)) for p in secondary_data_paths]        
 
         for p in self.secondary_data_paths:
             if not p.exists():
@@ -171,6 +183,8 @@ class FileManager(object):
             exp_fn = exp_fn.absolute()
         exp_fn = str(exp_fn)        
             
+        exp_fn = extend_long_path_on_windows(exp_fn, self.long_windows_path_limit)
+
         if not self.auto_string: 
             exp_fn = Path(exp_fn)
                
@@ -527,6 +541,11 @@ class ClassFileSerializer(object):
     def save_raw_to_file(self, raw_data, filename, override=False, revision=True):
         serial_data = raw_data
 
+        if filename is None:
+            raise ValueError('(Filename cannot be None!)')
+
+        filename = extend_long_path_on_windows(str(filename))
+
         if revision:
             revision_file = RevisionFile(base_name=filename)
             revision_file.create_new_revision()
@@ -546,6 +565,11 @@ class ClassFileSerializer(object):
 
 
     def load_raw_from_file(self, filename):
+        if filename is None:
+            raise FileNotFoundError('(Filename cannot be None!)')
+
+        filename = extend_long_path_on_windows(str(filename))
+
         with open(filename, 'rb') as f:
             file_data_binary = f.read()
             file_data = file_data_binary if self.binary else file_data_binary.decode()
@@ -561,9 +585,6 @@ class ClassFileSerializer(object):
         deserialize = getattr(self.cls, self.deserialize_classmethod)
         
         try:
-            if filename is None:
-                raise FileNotFoundError('(Filename cannot be None!)')
-            
             file_data = self.load_raw_from_file(filename)
 
         except FileNotFoundError:
@@ -595,7 +616,7 @@ class ClassFileSerializer(object):
             allow_parent = self.allow_parent
 
         if force_parent:
-            entity = entity.get_parent_entity()
+            entity = entity.parent
 
         try:
             filename = self.cls.get_serialization_filename(entity, file_identifier=file_identifier)
@@ -605,7 +626,7 @@ class ClassFileSerializer(object):
             load_parent = True
 
         if load_parent and allow_parent:
-            filename = self.cls.get_serialization_filename(entity.get_parent_entity(), 
+            filename = self.cls.get_serialization_filename(entity.parent, 
                                                         file_identifier=file_identifier)
         
         return filename
