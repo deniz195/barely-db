@@ -6,13 +6,10 @@ Create an example database:
 
 .. code-block:: python
 
-    >>> from pathlib import Path
-    >>> base_path = Path('./BakeryDatabase').absolute().resolve()
-
     >>> import barely_db
     >>> import barely_db.examples
 
-    >>> bdb = barely_db.examples.make_example_db(base_path)
+    >>> bdb = barely_db.examples.make_example_db('./BakeryDatabase')
     >>> bdb.load_entities()
 
     >>> print(bdb['CU0005'])
