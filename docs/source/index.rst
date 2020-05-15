@@ -3,11 +3,9 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-==================================================
-``barely-db``: A Database when you barely need one
-==================================================
-
-
+========================================================
+``barely-db``: A database for humans who barely need one
+========================================================
 
 
 Getting Started
@@ -17,6 +15,18 @@ Getting Started
 
 Why?
 ====
+
+
+
+
+Overview
+========
+
+.. toctree::
+   :maxdepth: 1
+
+   example
+   filemanager
 
 
 
@@ -34,25 +44,10 @@ It turns out that while computers can deal really well with
 
 
 
-
-
 https://www.w3.org/2001/03/identification-problem/
 https://www.namingthings.co/
 
 
-
-
-Example: A small bakery
-=======================
-
-+------------------------+------------+----------+----------+
-| Header row, column 1   | Header 2   | Header 3 | Header 4 |
-| (header rows optional) |            |          |          |
-+========================+============+==========+==========+
-| body row 1, column 1   | column 2   | column 3 | column 4 |
-+------------------------+------------+----------+----------+
-| body row 2             | ...        | ...      |          |
-+------------------------+------------+----------+----------+
 
 
 
@@ -61,8 +56,9 @@ Full Table of Contents
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
+   example
+   filemanager
 
 
 Indices and tables

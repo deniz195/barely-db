@@ -24,6 +24,8 @@ author = 'Deniz Bozyigit'
 # The full version, including alpha/beta/rc tags
 release = '0.8.0'
 
+master_doc = 'index'
+
 
 # -- General configuration ---------------------------------------------------
 

@@ -4,7 +4,7 @@
 
 from setuptools import setup, find_packages
 
-with open('README.md') as f:
+with open('README.rst') as f:
     readme = f.read()
 
 with open('LICENSE') as f:
@@ -12,8 +12,8 @@ with open('LICENSE') as f:
 
 setup(
     name='barely-db',
-    version='0.8.1',
-    description='A simple filesystem based database.',
+    version='0.8.2',
+    description='A database for humans who barely need one.',
     long_description=readme,
     author='Deniz Bozyigit',
     author_email='deniz195@gmail.com',
