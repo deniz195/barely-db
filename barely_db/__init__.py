@@ -187,8 +187,8 @@ class BarelyDB(BarelyDBLegacyInterfaceMixin):
         return filename
 
     def relative_file(self, filename):
-        filename = Path(self.resolved_file(filename))
-        file_rel = Path(filename).relative_to(self.base_path).as_posix()
+        filename = Path(extend_long_path_on_windows(str(self.resolved_file(filename)), 0))
+        file_rel = Path(filename).relative_to(extend_long_path_on_windows(str(self.base_path), 0)).as_posix()
         return str(file_rel)
 
     def absolute_file(self, file_rel):
