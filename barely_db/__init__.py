@@ -21,7 +21,7 @@ from .configs import *
 from .parser import *
 from .file_management import *
 
-use_legacy = True
+use_legacy = False
 if use_legacy:
     from .legacy import BarelyDBLegacyInterfaceMixin, BarelyDBEntityLegacyInterfaceMixin
 else:
@@ -329,11 +329,16 @@ class BarelyDB(BarelyDBLegacyInterfaceMixin):
 
 
 
-    def create_new_entity(self, *, after, name, reload=True):
-        new_buid = self._get_free_buid(after)[0]
-        self._create_entity_path(new_buid, name, reload=reload)
+    def create_new_entity(self, *, name, after=None, buid=None, reload=True):
+        if not buid and not after:
+            raise ValueError('create_new_entity needs either after or buid parameter!')
 
-        return self[new_buid]
+        if not buid:
+            buid = self._get_free_buid(after)[0]
+
+        self._create_entity_path(buid, name, reload=reload)
+
+        return self[buid]
 
 
     def _get_free_buid(self, after, no_buids = 1, no_free_biuds=None):
