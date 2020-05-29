@@ -1,6 +1,6 @@
 import pytest
 import os
-from pathlib import Path
+from pathlib import Path, PurePath, PurePosixPath, PureWindowsPath
 
 import attr
 import cattr
@@ -10,7 +10,31 @@ from ruamel.yaml.compat import StringIO
 
 import barely_db
 from barely_db import *
+from barely_db.file_management import estimate_pure_path, normalize_pure_path
 from get_manually_entities import get_all_entity
+
+def test_pure_path():
+    assert type(estimate_pure_path('C:\\Repo\\')) == PureWindowsPath
+    assert type(estimate_pure_path('C:Repo')) == PureWindowsPath
+    assert type(estimate_pure_path('C:\\Repo\\read.txt')) == PureWindowsPath
+    assert type(estimate_pure_path('/repo/')) == PurePosixPath
+    assert type(estimate_pure_path('repo/')) == PurePosixPath
+    assert type(estimate_pure_path('repo')) == PurePosixPath
+    assert type(estimate_pure_path('repo/read.txt')) == PurePosixPath
+
+    assert normalize_pure_path('C:\\Repo') == 'C:\\Repo'
+    assert normalize_pure_path('C:\\Repo\\') == 'C:\\Repo'
+    assert normalize_pure_path('C:Repo') == 'C:Repo'
+    assert normalize_pure_path('/repo') == '/repo'
+    assert normalize_pure_path('/repo/') == '/repo'
+    assert normalize_pure_path('repo') == 'repo'
+    assert normalize_pure_path('repo/') == 'repo'
+
+    assert normalize_pure_path('C:\\Repo\\read.txt') == 'C:\\Repo\\read.txt'
+    assert normalize_pure_path('/repo/read.txt') == '/repo/read.txt'
+
+
+
 
 def test_filemanager(bdb):
     ent = bdb.get_entity('WB3001')

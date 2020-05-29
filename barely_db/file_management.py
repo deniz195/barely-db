@@ -16,7 +16,7 @@ import typing
 import json
 import re
 import zipfile
-from pathlib import Path
+from pathlib import Path, PurePath, PurePosixPath, PureWindowsPath
 import shutil
 import filecmp
 
@@ -26,7 +26,10 @@ from enum import Enum, IntEnum
 
 from .parser import *
 
-__all__ = ['extend_long_path_on_windows', 'open_in_explorer', 'FileManager', 'FileNameAnalyzer', 'copy_files_with_jupyter_button', 'serialize_to_file', 'RevisionFile', 'ClassFileSerializer', 'cattr_json_serialize']
+__all__ = ['estimate_pure_path', 'normalize_pure_path', 'extend_long_path_on_windows', 'open_in_explorer', 
+           'FileManager', 'FileNameAnalyzer', 
+           'copy_files_with_jupyter_button', 'serialize_to_file', 
+           'RevisionFile', 'ClassFileSerializer', 'cattr_json_serialize']
 
 # from chunked_object import *
 # from message_dump import *
@@ -42,6 +45,17 @@ def _reload_module():
     current_module = sys.modules[__name__]
     module_logger.info('Reloading module %s' % __name__)
     importlib.reload(current_module)
+
+
+
+def estimate_pure_path(p):
+    if PureWindowsPath(p).drive: # detect if this a windows path name
+        return PureWindowsPath(p)
+    else: 
+        return PurePosixPath(p)    
+
+def normalize_pure_path(p):
+    return str(estimate_pure_path(p))    
 
 
 def extend_long_path_on_windows(fn, long_windows_path_limit=150):

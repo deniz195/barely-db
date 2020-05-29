@@ -61,6 +61,7 @@ class BarelyDB(BarelyDBLegacyInterfaceMixin):
     long_windows_path_limit = None
 
     _MyBUIDParser = None
+    _known_bases = None
 
     def __init__(self, name=None, base_path=None, 
                     path_depth=None, 
@@ -117,7 +118,7 @@ class BarelyDB(BarelyDBLegacyInterfaceMixin):
                                     allow_components=False)        
 
 
-        self.known_bases_re = [re.compile(re.escape(b), re.IGNORECASE) for b in self.known_bases]
+        self.known_bases = self.config.known_bases
 
 
     @property
@@ -134,8 +135,15 @@ class BarelyDB(BarelyDBLegacyInterfaceMixin):
     
     @property
     def known_bases(self):
-        return self.config.known_bases
-    
+        return self._known_bases
+
+    @known_bases.setter
+    def known_bases(self, value):
+        # value = [str(Path(p)) for p in value]
+
+        self._known_bases = value
+        self.known_bases_re = [re.compile(re.escape(b), re.IGNORECASE) for b in self._known_bases]
+
     @property
     def buid_types(self):
         return self.config.buid_types
