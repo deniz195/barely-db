@@ -11,7 +11,7 @@ import copy
 
 import json
 import re
-from pathlib import Path, PureWindowsPath
+from pathlib import Path, PurePath, PureWindowsPath
 
 from collections import OrderedDict
 from collections.abc import Sequence, Container
@@ -177,7 +177,11 @@ class BarelyDB(object):
             found_re = next((r for r in self.known_bases_re if r.match(filename)))
             filename_rel = found_re.sub('', filename)
 
-            filename_resolved = str(self.base_path.joinpath(filename_rel))
+            # This line works on the assumptions that relative posix paths
+            # are always valid as relative windows paths
+            filename_rel = PurePath(PureWindowsPath(filename_rel))
+
+            filename_resolved = str(self.base_path / filename_rel)
         except StopIteration:
             filename_resolved = str(Path(filename))
 
