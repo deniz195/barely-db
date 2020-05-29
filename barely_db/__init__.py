@@ -135,7 +135,7 @@ class BarelyDB(object):
         # value = [str(estimate_pure_path(p)) for p in value]
         for p in value:
             if p[-1] not in ['/', '\\']:
-                module_logger.warning(f'Known base {p} does not end in / or \\ - consider fixing!')
+                module_logger.error(f'Known base {p} does not end in / or \\ - consider fixing!')
 
         self._known_bases = value
         self.known_bases_re = [re.compile(re.escape(b), re.IGNORECASE) for b in self._known_bases]
