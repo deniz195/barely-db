@@ -42,7 +42,7 @@ def test_eq_entities(bdb):
 def test_entity_files(bdb):
     ent = bdb['WB3001']
 
-    assert ent.name == 'SL_LGA1'
+    assert ent.name == 'SL'
 
     entity_files_list = ent.files('*')
 
