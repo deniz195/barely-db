@@ -46,7 +46,7 @@ def test_entity_files(bdb):
 
     entity_files_list = ent.files('*')
 
-    folder = 'barely-db://Webs/WB3001_SL_LGA1'
+    folder = 'barely-db://Webs/WB3001_SL'
     folder_path = bdb.resolved_file(folder) 
     all_paths = []
     for filename in os.listdir(folder_path):

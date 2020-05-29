@@ -47,7 +47,7 @@ def test_create_components(bdb):
 
     component_name ='T1'
     component_comment = 'some_component'
-    folder = 'barely-db://Webs/WB3001_SL_LGA1'
+    folder = 'barely-db://Webs/WB3001_SL'
     folder_path = Path(bdb.resolved_file(folder))
 
     contains_component,path_to_component = check_folder_contains_component(folder_path, component_name)

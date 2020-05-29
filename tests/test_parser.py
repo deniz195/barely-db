@@ -122,7 +122,7 @@ def test_format(bdb):
 #         ent.create_component_path('P1')
 
 #     component_name ='T1'
-#     folder = 'barely-db://Webs/WB3001_SL_LGA1'
+#     folder = 'barely-db://Webs/WB3001_SL'
 #     folder_path = Path(bdb.resolve_file(folder))
 
 #     contains_component,path_to_component = check_folder_contains_component(folder_path, component_name)

@@ -21,13 +21,6 @@ from .configs import *
 from .parser import *
 from .file_management import *
 
-use_legacy = False
-if use_legacy:
-    from .legacy import BarelyDBLegacyInterfaceMixin, BarelyDBEntityLegacyInterfaceMixin
-else:
-    BarelyDBLegacyInterfaceMixin = object
-    BarelyDBEntityLegacyInterfaceMixin = object
-
 # from .tools import *
 # Naming conventions: https://swift.org/documentation/api-design-guidelines/#strive-for-fluent-usage
 
@@ -49,7 +42,7 @@ def _reload_module():
 
 
 
-class BarelyDB(BarelyDBLegacyInterfaceMixin):
+class BarelyDB(object):
     config = None
     base_path = None
 
@@ -139,7 +132,10 @@ class BarelyDB(BarelyDBLegacyInterfaceMixin):
 
     @known_bases.setter
     def known_bases(self, value):
-        # value = [str(Path(p)) for p in value]
+        # value = [str(estimate_pure_path(p)) for p in value]
+        for p in value:
+            if p[-1] not in ['/', '\\']:
+                module_logger.warning(f'Known base {p} does not end in / or \\ - consider fixing!')
 
         self._known_bases = value
         self.known_bases_re = [re.compile(re.escape(b), re.IGNORECASE) for b in self._known_bases]
@@ -166,8 +162,6 @@ class BarelyDB(BarelyDBLegacyInterfaceMixin):
         return list(self.entity_paths.keys())
 
 
-
-
     def resolved_file(self, filename):
         base_path_str = f'{str(self.base_path)}{os.sep}'
         base_path_str = base_path_str.replace('\\', '\\\\')
@@ -179,20 +173,20 @@ class BarelyDB(BarelyDBLegacyInterfaceMixin):
         elif "://" in filename:
             is_URL_like = True
 
-        for b_re in self.known_bases_re:
-            filename = b_re.sub(base_path_str, filename)
-            # if file is windows like and have a unix like filing system 
-            if is_windows and ('/' in base_path_str):
-                filename = filename.replace("\\","/") # replace backslashes to forward slashes 
-            # check it is the other way around        
-            elif (not is_windows) and (not is_URL_like) and ('\\' in base_path_str):
-                filename = filename.replace("/","\\")
+        try: 
+            found_re = next((r for r in self.known_bases_re if r.match(filename)))
+            filename_rel = found_re.sub('', filename)
+
+            filename_resolved = str(self.base_path.joinpath(filename_rel))
+        except StopIteration:
+            filename_resolved = str(Path(filename))
 
         # To facilitate working on windows, we will extend windows paths when they 
         # are long. see https://bugs.python.org/issue18199#msg260076
-        filename = extend_long_path_on_windows(filename, self.long_windows_path_limit)
+        filename_ext = extend_long_path_on_windows(filename_resolved, self.long_windows_path_limit)
 
-        return filename
+        return filename_ext
+
 
     def relative_file(self, filename):
         filename = Path(extend_long_path_on_windows(str(self.resolved_file(filename)), 0))
@@ -426,7 +420,7 @@ class BarelyDB(BarelyDBLegacyInterfaceMixin):
 
 
 
-class BarelyDBEntity(BarelyDBEntityLegacyInterfaceMixin):
+class BarelyDBEntity(object):
     
     path_converter = None
 
