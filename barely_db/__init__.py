@@ -112,7 +112,15 @@ class BarelyDB(object):
 
 
         self.known_bases = self.config.known_bases
+        self.register_error_handler(None)
 
+
+    def register_error_handler(self, error_handler):
+        self._error_handler = error_handler
+
+    @property
+    def error_handler(self):
+        return self._error_handler
 
     @property
     def name(self):

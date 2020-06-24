@@ -649,13 +649,16 @@ class ClassFileSerializer(object):
         return filename
 
 
-    def load_from_entity(self, entity, file_identifier=None, allow_parent=None, force_parent=False, default=None, fail_to_default=False):           
+    def load_from_entity(self, entity, file_identifier=None, allow_parent=None, force_parent=False, default=None, error_handler = None, fail_to_default=False):           
         if entity is None and fail_to_default:
             return default
 
+        if error_handler is None:
+            error_handler = entity.bdb.error_handler
+
         filename = self.resolve_file_from_entity(entity, file_identifier=file_identifier, allow_parent=allow_parent, force_parent=force_parent)
 
-        obj = self.load_from_file(filename, default=default, fail_to_default=fail_to_default)
+        obj = self.load_from_file(filename, default=default, fail_to_default=fail_to_default, error_handler=error_handler)
 
         # Check if object buid is consistent with entity:
         try:
