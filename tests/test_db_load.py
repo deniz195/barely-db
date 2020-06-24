@@ -7,7 +7,8 @@ import barely_db
 from barely_db import *
 
 def test_db_load():
-    bdb = BarelyDB(base_path='./Database',path_depth=1)
+    path_fn = Path(__file__).parent.joinpath('Database')
+    bdb = BarelyDB(base_path=path_fn, path_depth=1)
     bdb.load_entities()
 
     filename = os.path.abspath(__file__)
