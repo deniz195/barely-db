@@ -587,17 +587,15 @@ class ClassFileSerializer(object):
         with open(filename, 'rb') as f:
             file_data_binary = f.read()
             file_data = file_data_binary if self.binary else file_data_binary.decode()
-        
         return file_data
 
-
-    def load_from_file(self, filename, default=None, fail_to_default=False):           
+    def load_from_file(self, filename, default=None, fail_to_default=False, error_handler=None):
         if self.deserialize_classmethod is None:
             module_logger.error(f'Class {self.cls.__qualname__} cannot be deserialized!')
             return None
 
         deserialize = getattr(self.cls, self.deserialize_classmethod)
-        
+
         try:
             file_data = self.load_raw_from_file(filename)
 
@@ -608,11 +606,16 @@ class ClassFileSerializer(object):
                 module_logger.info(f'Using default, because file not found ({filename}).')
                 return default
 
-        try:
-            return deserialize(file_data)
-        except BaseException as e:
-            raise RuntimeError(f'Deserialization failed for file {filename}')
-
+        if error_handler is not None:
+            error_handler.set_filename(filename)
+            error_handler.set_class(self.cls)
+            with error_handler:
+                return deserialize(file_data)
+        else:
+            try:
+                return deserialize(file_data)
+            except BaseException as e:
+                raise RuntimeError(f'Deserialization failed for file {filename}')
 
     def save_to_entity(self, obj, entity, file_identifier=None, override=False, revision=True, open_in_explorer=False):
         filename = self.cls.get_serialization_filename(entity, file_identifier=file_identifier)
