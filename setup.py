@@ -12,7 +12,7 @@ with open('LICENSE') as f:
 
 setup(
     name='barely-db',
-    version='0.8.3',
+    version='0.8.4',
     description='A database for humans who barely need one.',
     long_description=readme,
     author='Deniz Bozyigit',
