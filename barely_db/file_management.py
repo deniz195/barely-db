@@ -655,6 +655,10 @@ class ClassFileSerializer(object):
                     f"Using default, because file not found ({filename})."
                 )
                 return default
+        if error_handler is None:
+            from .tools import DefaultErrorHandler
+
+            error_handler = DefaultErrorHandler()
 
         error_handler.filename = filename
         error_handler.target_cls = self.cls
