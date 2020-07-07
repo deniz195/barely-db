@@ -20,7 +20,6 @@ from collections.abc import Sequence, Container
 from .configs import *
 from .parser import *
 from .file_management import *
-from .tools import DefaultErrorHandler
 
 # from .tools import *
 # Naming conventions: https://swift.org/documentation/api-design-guidelines/#strive-for-fluent-usage
@@ -128,6 +127,8 @@ class BarelyDB(object):
 
     def register_error_handler(self, error_handler):
         if error_handler is None:
+            from .tools import DefaultErrorHandler
+
             self._error_handler = DefaultErrorHandler()
         else:
             self._error_handler = error_handler

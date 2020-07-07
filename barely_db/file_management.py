@@ -656,9 +656,9 @@ class ClassFileSerializer(object):
                 )
                 return default
 
-        self.error_handler.filename = filename
-        self.error_handler.target_cls = self.cls
-        with self.error_handler:
+        error_handler.filename = filename
+        error_handler.target_cls = self.cls
+        with error_handler:
             return deserialize(file_data)
 
     def save_to_entity(
