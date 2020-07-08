@@ -12,7 +12,7 @@ with open('LICENSE') as f:
 
 setup(
     name='barely-db',
-    version='0.8.4',
+    version='0.8.5',
     description='A database for humans who barely need one.',
     long_description=readme,
     author='Deniz Bozyigit',
@@ -20,6 +20,5 @@ setup(
     url='https://bitbucket.org/battriondev/barely-db.git',
     license=license,
     packages=find_packages(exclude=('tests', 'tests_legacy', 'docs', 'examples')),
-    install_requires = ['attrs', 'cattrs',],
+    install_requires=['attrs', 'cattrs',],
 )
-
