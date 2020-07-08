@@ -41,7 +41,7 @@ def test_filemanager(bdb):
     fm = ent.make_file_manager()
 
     fns = fm.get_files('*.yaml')
-    assert len(fns) == 3
+    assert len(fns) == 4
 
     fns = fm.get_files('*', directories_only=True)
     assert len(fns) == 2
