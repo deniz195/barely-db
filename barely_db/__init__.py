@@ -1,19 +1,12 @@
 import logging
 import collections
-import typing
-import attr
-import cattr
 
-import datetime
-import sys
 import os
 import copy
 
-import json
 import re
 from pathlib import Path, PurePath, PureWindowsPath
 
-from collections import OrderedDict
 from collections.abc import Sequence, Container
 
 # from .file_management import FileManager, FileNameAnalyzer, serialize_to_file, open_in_explorer
@@ -94,9 +87,7 @@ class BarelyDB(object):
                     break
 
         if base_path is None:
-            raise RuntimeError(
-                "Could not automatically determine base path of database!"
-            )
+            raise RuntimeError("Could not automatically determine base path of database!")
 
         self.config = BarelyDBConfig.load(base_path)
 
@@ -118,20 +109,13 @@ class BarelyDB(object):
             ignore_unknown=True, mode="unique", warn_empty=True, allow_components=False
         )
 
-        self.buid_scan = self.BUIDParser(
-            ignore_unknown=True, mode="first", warn_empty=False, allow_components=False
-        )
+        self.buid_scan = self.BUIDParser(ignore_unknown=True, mode="first", warn_empty=False, allow_components=False)
 
         self.known_bases = self.config.known_bases
         self.register_error_handler(None)
 
     def register_error_handler(self, error_handler):
-        if error_handler is None:
-            from .tools import DefaultErrorHandler
-
-            self._error_handler = DefaultErrorHandler()
-        else:
-            self._error_handler = error_handler
+        self._error_handler = error_handler
 
     @property
     def error_handler(self):
@@ -158,14 +142,10 @@ class BarelyDB(object):
         # value = [str(estimate_pure_path(p)) for p in value]
         for p in value:
             if p[-1] not in ["/", "\\"]:
-                module_logger.error(
-                    f"Known base {p} does not end in / or \\ - consider fixing!"
-                )
+                module_logger.error(f"Known base {p} does not end in / or \\ - consider fixing!")
 
         self._known_bases = value
-        self.known_bases_re = [
-            re.compile(re.escape(b), re.IGNORECASE) for b in self._known_bases
-        ]
+        self.known_bases_re = [re.compile(re.escape(b), re.IGNORECASE) for b in self._known_bases]
 
     @property
     def buid_types(self):
@@ -213,21 +193,13 @@ class BarelyDB(object):
 
         # To facilitate working on windows, we will extend windows paths when they
         # are long. see https://bugs.python.org/issue18199#msg260076
-        filename_ext = extend_long_path_on_windows(
-            filename_resolved, self.long_windows_path_limit
-        )
+        filename_ext = extend_long_path_on_windows(filename_resolved, self.long_windows_path_limit)
 
         return filename_ext
 
     def relative_file(self, filename):
-        filename = Path(
-            extend_long_path_on_windows(str(self.resolved_file(filename)), 0)
-        )
-        file_rel = (
-            Path(filename)
-            .relative_to(extend_long_path_on_windows(str(self.base_path), 0))
-            .as_posix()
-        )
+        filename = Path(extend_long_path_on_windows(str(self.resolved_file(filename)), 0))
+        file_rel = Path(filename).relative_to(extend_long_path_on_windows(str(self.base_path), 0)).as_posix()
         return str(file_rel)
 
     def absolute_file(self, file_rel):
@@ -236,13 +208,9 @@ class BarelyDB(object):
         # this is for safety to make sure that the path is really relative to base_path
         try:
             file_rel_recover = self.relative_file(file_abs)
-            file_abs_recover = str(
-                self.base_path.joinpath(file_rel_recover).absolute().resolve()
-            )
+            file_abs_recover = str(self.base_path.joinpath(file_rel_recover).absolute().resolve())
         except ValueError:
-            raise ValueError(
-                f"Given relative file name is not result in a file in the given database! ({file_rel})"
-            )
+            raise ValueError(f"Given relative file name is not result in a file in the given database! ({file_rel})")
 
         return str(file_abs_recover)
 
@@ -269,15 +237,9 @@ class BarelyDB(object):
         candidates_buid = [(buid_p(c), c) for c in candidates]
         found_buids = [buid for buid, path in candidates_buid if buid is not None]
         self._duplicate_buid_count = collections.Counter(found_buids)
-        self._duplicate_buid = [
-            item
-            for item, count in self._duplicate_buid_count.items()
-            if item and count > 1
-        ]
+        self._duplicate_buid = [item for item, count in self._duplicate_buid_count.items() if item and count > 1]
 
-        self.entity_paths = {
-            buid: path for buid, path in candidates_buid if buid is not None
-        }
+        self.entity_paths = {buid: path for buid, path in candidates_buid if buid is not None}
         self.logger.info(f"Entities found: {len(self.entity_paths)}")
 
         self.check_for_duplicates(verbose=verbose)
@@ -289,9 +251,7 @@ class BarelyDB(object):
         duplicate_buid = self._duplicate_buid
 
         if duplicate_buid:
-            self.logger.error(
-                f"Following entities have multiple paths/folders: {duplicate_buid}"
-            )
+            self.logger.error(f"Following entities have multiple paths/folders: {duplicate_buid}")
 
         return bool(duplicate_buid)
 
@@ -335,11 +295,7 @@ class BarelyDB(object):
             return self.buid_scan.parse_component(base_buid + component_path.name)
 
         candidates_components = [(component_parser(c), c) for c in candidates]
-        component_paths = {
-            component: path
-            for component, path in candidates_components
-            if component is not None
-        }
+        component_paths = {component: path for component, path in candidates_components if component is not None}
 
         self.component_paths[base_buid] = component_paths
 
@@ -444,9 +400,7 @@ class BarelyDB(object):
         files = Path(path).glob(glob)
 
         if must_contain_buid:
-            buid_p = self.BUIDParser(
-                ignore_unknown=False, mode="first", warn_empty=False
-            )
+            buid_p = self.BUIDParser(ignore_unknown=False, mode="first", warn_empty=False)
             files_sel = [fn for fn in files if (buid_p(fn) == buid)]
             files = files_sel
 
@@ -475,20 +429,14 @@ class BarelyDBEntity(object):
         self._bdb = parent_bdb
         self.path_converter = parent_bdb.path_converter
 
-        buid_p = self.bdb.BUIDParser(
-            ignore_unknown=False, mode="first", warn_empty=True, allow_components=False
-        )
+        buid_p = self.bdb.BUIDParser(ignore_unknown=False, mode="first", warn_empty=True, allow_components=False)
         self._buid = buid_p(buid)
 
-        buid_ent_p = self.bdb.BUIDParser(
-            ignore_unknown=False, mode="first", warn_empty=True, allow_components=False
-        )
+        buid_ent_p = self.bdb.BUIDParser(ignore_unknown=False, mode="first", warn_empty=True, allow_components=False)
 
         self._buid_entity = buid_ent_p(buid)
 
-        buid_comp_p = self.bdb.BUIDParser(
-            ignore_unknown=False, mode="first", warn_empty=False, allow_components=False
-        )
+        buid_comp_p = self.bdb.BUIDParser(ignore_unknown=False, mode="first", warn_empty=False, allow_components=False)
 
         self.component = buid_comp_p.parse_component(buid)
 
@@ -506,9 +454,7 @@ class BarelyDBEntity(object):
             name = "<does not exist!>"
             comp = ""
 
-        return (
-            f"{self.__class__.__qualname__}('{self.buid_with_component}', {name}{comp})"
-        )
+        return f"{self.__class__.__qualname__}('{self.buid_with_component}', {name}{comp})"
 
     def __eq__(self, other):
         return self.buid_with_component == other.buid_with_component
@@ -562,21 +508,13 @@ class BarelyDBEntity(object):
 
     def files(self, glob, must_contain_buid=False, output_as_str=True):
         if self.component is None:
-            return self.entity_files(
-                glob, must_contain_buid=must_contain_buid, output_as_str=output_as_str
-            )
+            return self.entity_files(glob, must_contain_buid=must_contain_buid, output_as_str=output_as_str)
         else:
-            return self.component_files(
-                glob, must_contain_buid=must_contain_buid, output_as_str=output_as_str
-            )
+            return self.component_files(glob, must_contain_buid=must_contain_buid, output_as_str=output_as_str)
 
     def entity_files(self, glob, must_contain_buid=False, output_as_str=True):
         return self.bdb._get_files(
-            self.buid_entity,
-            self.entity_path,
-            glob,
-            must_contain_buid=must_contain_buid,
-            output_as_str=output_as_str,
+            self.buid_entity, self.entity_path, glob, must_contain_buid=must_contain_buid, output_as_str=output_as_str,
         )
 
     def component_files(self, glob, must_contain_buid=False, output_as_str=True):
@@ -640,9 +578,7 @@ class BarelyDBEntity(object):
 
         existing_path = self.component_paths.get(component, None)
         if existing_path:
-            self.logger.warning(
-                f"Component {component} already exists! {str(existing_path)}"
-            )
+            self.logger.warning(f"Component {component} already exists! {str(existing_path)}")
             return existing_path
 
         base_bath = self.bdb.get_entity_path(self.buid_entity)
@@ -658,18 +594,14 @@ class BarelyDBEntity(object):
         return component_path
 
     def has_object(self, object_class, allow_parent=None):
-        filename = object_class.file_serializer.resolve_file_from_entity(
-            self, allow_parent=allow_parent
-        )
+        filename = object_class.file_serializer.resolve_file_from_entity(self, allow_parent=allow_parent)
         return False if filename is None else Path(filename).exists()
 
     def save_object(self, obj, **kwds):
         filename = obj.save_to_entity(self, **kwds)
         return filename
 
-    def load_object(
-        self, object_class, default=None, fail_to_exception=False, quiet=False
-    ):
+    def load_object(self, object_class, default=None, fail_to_exception=False, quiet=False):
         obj = None
 
         try:

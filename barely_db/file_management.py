@@ -26,6 +26,8 @@ import functools
 from enum import Enum, IntEnum
 
 from .parser import *
+from .error_handler import DefaultErrorHandler
+
 
 __all__ = [
     "estimate_pure_path",
@@ -116,19 +118,14 @@ class FileManager(object):
         if not isinstance(raw_path, list):
             raw_path = [raw_path]
 
-        self.raw_path = [
-            Path(extend_long_path_on_windows(str(p), self.long_windows_path_limit))
-            for p in raw_path
-        ]
+        self.raw_path = [Path(extend_long_path_on_windows(str(p), self.long_windows_path_limit)) for p in raw_path]
 
         for p in self.raw_path:
             if not p.exists():
                 raise FileNotFoundError(str(p))
 
     def set_export_path(self, export_path, export_prefix=""):
-        self.export_prefix = extend_long_path_on_windows(
-            str(export_prefix), self.long_windows_path_limit
-        )
+        self.export_prefix = extend_long_path_on_windows(str(export_prefix), self.long_windows_path_limit)
         self.export_path = Path(export_path)
         self.export_path.mkdir(parents=True, exist_ok=True)
 
@@ -137,8 +134,7 @@ class FileManager(object):
             secondary_data_paths = [secondary_data_paths]
 
         self.secondary_data_paths = [
-            Path(extend_long_path_on_windows(str(p), self.long_windows_path_limit))
-            for p in secondary_data_paths
+            Path(extend_long_path_on_windows(str(p), self.long_windows_path_limit)) for p in secondary_data_paths
         ]
 
         for p in self.secondary_data_paths:
@@ -177,12 +173,7 @@ class FileManager(object):
         return fns
 
     def get_files(self, file_glob, directories_only=False, files_only=False):
-        return self._get_files(
-            file_glob,
-            self.raw_path,
-            directories_only=directories_only,
-            files_only=files_only,
-        )
+        return self._get_files(file_glob, self.raw_path, directories_only=directories_only, files_only=files_only,)
 
     def get_directories(self, dir_glob):
         return self._get_files(dir_glob, self.raw_path, directories_only=True)
@@ -196,9 +187,7 @@ class FileManager(object):
         fns_filtered = []
         for fn in fns:
             if bool(re.findall(" \(1\)", fn)):
-                module_logger.warning(
-                    f"Removed google drive dupplicate from result! ({fn})"
-                )
+                module_logger.warning(f"Removed google drive dupplicate from result! ({fn})")
             else:
                 fns_filtered.append(fn)
 
@@ -257,9 +246,7 @@ class FileNameAnalyzer(object):
         self.logger = module_logger
         self.last_filename = ""
 
-    def add_regex(
-        self, regex, param_name, numeric=False, required=True, converter=None
-    ):
+    def add_regex(self, regex, param_name, numeric=False, required=True, converter=None):
         regex_entry = {
             "regex": regex,
             "param_name": param_name,
@@ -287,17 +274,13 @@ class FileNameAnalyzer(object):
 
             if len(results) == 0:
                 if r["required"]:
-                    self.logger.warning(
-                        "Required parameter (%s) not found!" % r["param_name"]
-                    )
+                    self.logger.warning("Required parameter (%s) not found!" % r["param_name"])
             elif len(results) >= 1:
                 if len(results) > 1:
                     # self.logger.warning('Parameter (%s) ambiguous! Using first of %s.' % (r['param_name'], str(results)))
                     # see if we only look in the filename itself we get uniqueness
                     results_name_only = re.findall(r["regex"], Path(filename).name)
-                    results_name_only = list(
-                        set(results_name_only)
-                    )  # remove dupplicates!
+                    results_name_only = list(set(results_name_only))  # remove dupplicates!
 
                     if len(results_name_only) == 1:
                         results = results_name_only
@@ -359,9 +342,7 @@ def copy_files_with_jupyter_button(fns, target_path, dry_run=False, show_button=
     def copy_files(button):
         import shutil
 
-        progress = widgets.IntProgress(
-            min=0, max=len(fns), value=0, description="Copying..."
-        )
+        progress = widgets.IntProgress(min=0, max=len(fns), value=0, description="Copying...")
         display(progress)
 
         for fn in fns:
@@ -376,8 +357,7 @@ def copy_files_with_jupyter_button(fns, target_path, dry_run=False, show_button=
         progress.description = "Done!"
 
     button = widgets.Button(
-        description=f"Copy files ({len(fns)}) to {target_path}",
-        layout=widgets.Layout(width="90%"),
+        description=f"Copy files ({len(fns)}) to {target_path}", layout=widgets.Layout(width="90%"),
     )
     button.on_click(copy_files)
 
@@ -439,9 +419,7 @@ class RevisionFile(object):
         if self.exists():
             new_rev = self.get_new_revision()
             shutil.move(self.base_name, new_rev.full_name)
-            module_logger.info(
-                f"Created new revision ({new_rev.revision}) of file {self.base_name}!"
-            )
+            module_logger.info(f"Created new revision ({new_rev.revision}) of file {self.base_name}!")
 
     def get_last_revision(self):
         old_rev_exists, path_to_old_rev = self.old_revision_folder_exists()
@@ -469,9 +447,7 @@ class RevisionFile(object):
         if last_rev is not None:
             if filecmp.cmp(self.base_name, last_rev.full_name, shallow=False):
                 os.unlink(last_rev.full_name)
-                module_logger.info(
-                    f"Last revision of {self.base_name} matches current version and is removed!"
-                )
+                module_logger.info(f"Last revision of {self.base_name} matches current version and is removed!")
 
 
 class ClassFileSerializer(object):
@@ -518,9 +494,7 @@ class ClassFileSerializer(object):
         for class_name, cfs in cls.cls_registry.items():
             if cfs.match_filename(fn):
                 found_cls = cfs.cls
-                module_logger.debug(
-                    f"Found class {found_cls.__qualname__} for file {Path(fn).name}"
-                )
+                module_logger.debug(f"Found class {found_cls.__qualname__} for file {Path(fn).name}")
 
         return found_cls
 
@@ -529,9 +503,7 @@ class ClassFileSerializer(object):
 
         if self.prefix or self.suffix or self.base_file_identifier:
             ClassFileSerializer.cls_registry[cls.__qualname__] = self
-            ClassFileSerializer.filename_pattern_registry[
-                self.get_filename_regex()
-            ] = self
+            ClassFileSerializer.filename_pattern_registry[self.get_filename_regex()] = self
 
     def get_filename_regex(self, file_identifier=None):
         rg = r""
@@ -577,13 +549,9 @@ class ClassFileSerializer(object):
 
         return filename
 
-    def save_to_file(
-        self, obj, filename, override=False, revision=True, use_suffix=False
-    ):
+    def save_to_file(self, obj, filename, override=False, revision=True, use_suffix=False):
         if self.serialize_method is None:
-            module_logger.error(
-                f"Object from class {obj.__class__.__qualname__} cannot be deserialized!"
-            )
+            module_logger.error(f"Object from class {obj.__class__.__qualname__} cannot be deserialized!")
             return None
 
         serialize = getattr(obj, self.serialize_method)
@@ -592,9 +560,7 @@ class ClassFileSerializer(object):
         if use_suffix:
             filename += self.suffix
 
-        self.save_raw_to_file(
-            serial_data, filename, override=override, revision=revision
-        )
+        self.save_raw_to_file(serial_data, filename, override=override, revision=revision)
 
     def save_raw_to_file(self, raw_data, filename, override=False, revision=True):
         serial_data = raw_data
@@ -609,9 +575,7 @@ class ClassFileSerializer(object):
             revision_file.create_new_revision()
 
         if Path(filename).exists() and not override:
-            module_logger.warning(
-                "File already exists. Skip. (consider override=True)."
-            )
+            module_logger.warning("File already exists. Skip. (consider override=True).")
         else:
             serial_data_binary = serial_data if self.binary else serial_data.encode()
 
@@ -633,13 +597,9 @@ class ClassFileSerializer(object):
             file_data = file_data_binary if self.binary else file_data_binary.decode()
         return file_data
 
-    def load_from_file(
-        self, filename, default=None, fail_to_default=False, error_handler=None
-    ):
+    def load_from_file(self, filename, default=None, fail_to_default=False, error_handler=None):
         if self.deserialize_classmethod is None:
-            module_logger.error(
-                f"Class {self.cls.__qualname__} cannot be deserialized!"
-            )
+            module_logger.error(f"Class {self.cls.__qualname__} cannot be deserialized!")
             return None
 
         deserialize = getattr(self.cls, self.deserialize_classmethod)
@@ -651,13 +611,10 @@ class ClassFileSerializer(object):
             if default is None and not fail_to_default:
                 raise
             else:
-                module_logger.info(
-                    f"Using default, because file not found ({filename})."
-                )
+                module_logger.info(f"Using default, because file not found ({filename}).")
                 return default
-        if error_handler is None:
-            from .tools import DefaultErrorHandler
 
+        if error_handler is None:
             error_handler = DefaultErrorHandler()
 
         error_handler.filename = filename
@@ -666,25 +623,15 @@ class ClassFileSerializer(object):
             return deserialize(file_data)
 
     def save_to_entity(
-        self,
-        obj,
-        entity,
-        file_identifier=None,
-        override=False,
-        revision=True,
-        open_in_explorer=False,
+        self, obj, entity, file_identifier=None, override=False, revision=True, open_in_explorer=False,
     ):
-        filename = self.cls.get_serialization_filename(
-            entity, file_identifier=file_identifier
-        )
+        filename = self.cls.get_serialization_filename(entity, file_identifier=file_identifier)
         self.save_to_file(obj, filename, override=override, revision=revision)
         if open_in_explorer:
             self.open_in_explorer(entity)
         return filename
 
-    def resolve_file_from_entity(
-        self, entity, file_identifier=None, allow_parent=None, force_parent=False
-    ):
+    def resolve_file_from_entity(self, entity, file_identifier=None, allow_parent=None, force_parent=False):
         if entity is None:
             return None
 
@@ -695,18 +642,14 @@ class ClassFileSerializer(object):
             entity = entity.parent
 
         try:
-            filename = self.cls.get_serialization_filename(
-                entity, file_identifier=file_identifier
-            )
+            filename = self.cls.get_serialization_filename(entity, file_identifier=file_identifier)
             load_parent = not Path(filename).exists()
         except FileNotFoundError:
             filename = None
             load_parent = True
 
         if load_parent and allow_parent:
-            filename = self.cls.get_serialization_filename(
-                entity.parent, file_identifier=file_identifier
-            )
+            filename = self.cls.get_serialization_filename(entity.parent, file_identifier=file_identifier)
 
         return filename
 
@@ -727,17 +670,11 @@ class ClassFileSerializer(object):
             error_handler = entity.bdb.error_handler
 
         filename = self.resolve_file_from_entity(
-            entity,
-            file_identifier=file_identifier,
-            allow_parent=allow_parent,
-            force_parent=force_parent,
+            entity, file_identifier=file_identifier, allow_parent=allow_parent, force_parent=force_parent,
         )
 
         obj = self.load_from_file(
-            filename,
-            default=default,
-            fail_to_default=fail_to_default,
-            error_handler=error_handler,
+            filename, default=default, fail_to_default=fail_to_default, error_handler=error_handler,
         )
 
         # Check if object buid is consistent with entity:
@@ -760,9 +697,7 @@ class ClassFileSerializer(object):
 
     def _open_in_explorer(self, entity, file_identifier=None):
         global open_in_explorer
-        filename = self.get_serialization_filename_from_entity(
-            entity, file_identifier=file_identifier
-        )
+        filename = self.get_serialization_filename_from_entity(entity, file_identifier=file_identifier)
         open_in_explorer(filename)
 
 
@@ -804,9 +739,7 @@ def serialize_to_file(
         cls.save_to_entity = functools.partialmethod(file_serializer.save_to_entity)
         cls.load_from_file = functools.partialmethod(file_serializer.load_from_file)
         cls.load_from_entity = functools.partialmethod(file_serializer.load_from_entity)
-        cls.open_in_explorer = functools.partialmethod(
-            file_serializer._open_in_explorer
-        )
+        cls.open_in_explorer = functools.partialmethod(file_serializer._open_in_explorer)
 
         return cls
 

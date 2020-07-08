@@ -1,13 +1,11 @@
 import logging
 import shutil
-import os
-import sys
 
 from pathlib import Path
 
 from . import BarelyDB
 
-__all__ = ["BarelyDBChecker", "BarelyDBSyncer", "DefaultErrorHandler"]
+__all__ = ["BarelyDBChecker", "BarelyDBSyncer"]
 
 # create logger
 module_logger = logging.getLogger(__name__)
@@ -108,9 +106,7 @@ class BarelyDBSyncer(object):
     def make_new_target_bdb(self, new_base_path):
         module_logger.info(f"Making new bdb at {new_base_path}")
         new_base_path.mkdir(parents=True, exist_ok=True)
-        bdb_target = BarelyDB(
-            base_path=new_base_path, path_depth=self.bdb_source.path_depth
-        )
+        bdb_target = BarelyDB(base_path=new_base_path, path_depth=self.bdb_source.path_depth)
         self._bdb_target = bdb_target
         return bdb_target
 
@@ -160,8 +156,7 @@ class BarelyDBSyncer(object):
         # create types
         source_buid_type_paths = self.bdb_source.buid_type_paths
         self.bdb_target.buid_type_paths = {
-            k: self.mkdir_from_source(path)
-            for k, path in source_buid_type_paths.items()
+            k: self.mkdir_from_source(path) for k, path in source_buid_type_paths.items()
         }
 
     def copy_entities(self, copy_components=True):
@@ -184,13 +179,11 @@ class BarelyDBSyncer(object):
             dependent_files_resolver = self.dependent_files_resolver
 
         bc = BarelyDBChecker(self.bdb_source)
-        diter = bc.discover_files(
-            glob, dependent_files_resolver=dependent_files_resolver
-        )
+        diter = bc.discover_files(glob, dependent_files_resolver=dependent_files_resolver)
 
         counter = 0
         for buid, fn in diter:
-            new_fn = self.copy_file_from_source(fn)
+            self.copy_file_from_source(fn)
             counter += 1
 
         self.logger.info(f"Copied {counter} files")
@@ -199,44 +192,5 @@ class BarelyDBSyncer(object):
         self.copy_buid_types()
         self.copy_entities()
 
-        self.copy_files(
-            "*.yaml", dependent_files_resolver=self.dependent_files_resolver
-        )
+        self.copy_files("*.yaml", dependent_files_resolver=self.dependent_files_resolver)
         self.bdb_target.load_entities()
-
-
-class DefaultErrorHandler(object):
-    def __init__(self, suppress_exception=False):
-        self._filename = None
-        self._target_cls = None
-        self.file_path_cls_def = None
-        self.suppress_exception = suppress_exception
-        self.logger = logging.getLogger(self.__class__.__qualname__)
-
-    def __enter__(self):
-        pass
-
-    def __exit__(self, exc_type, exc_val, traceback):
-        return self.suppress_exception
-
-    @property
-    def filename(self):
-        return self._filename
-
-    @filename.setter
-    def filename(self, fn):
-        self._filename = Path(fn)
-
-    @property
-    def target_cls(self):
-        return self._target_cls
-
-    @target_cls.setter
-    def target_cls(self, cls):
-        self._target_cls = cls
-        try:
-            self.file_path_cls_def = Path(
-                os.path.abspath(sys.modules[cls.__module__].__file__)
-            )
-        except BaseException:
-            self.file_path_cls_def = None
