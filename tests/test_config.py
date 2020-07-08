@@ -10,7 +10,6 @@ from barely_db import *
 from barely_db.legacy import *
 
 
-
 def test_config_restructure():
     ### Test restructuring
     config = BarelyDBConfig()
@@ -20,7 +19,6 @@ def test_config_restructure():
     assert config2 == config
 
 
-    
 def test_config_saveload(scratch_base_path):
     ### Test save and reload
     base_path = scratch_base_path
@@ -32,7 +30,6 @@ def test_config_saveload(scratch_base_path):
     assert config2 == config
 
 
-
 def test_sys_config_restructure():
     ### Test restructuring
     sys_config = BarelyDBSystemConfig()
@@ -42,7 +39,6 @@ def test_sys_config_restructure():
     assert sys_config2 == sys_config
 
 
-    
 def test_sys_config_saveload(scratch_base_path):
     ### Test save and reload
     filename = str(Path(scratch_base_path).joinpath('temp_bdb_sysconig.json'))
@@ -54,25 +50,16 @@ def test_sys_config_saveload(scratch_base_path):
     assert sys_config2 == sys_config
 
 
-
-
-
 def test_empty_db(scratch_base_path):
     base_path = scratch_base_path
 
-    bdb_config = BarelyDBConfig(name='bakery', path_depth=1, 
-                   buid_types={\
-                        'ingrediences': 'IG',
-                        'doughs': 'DG',
-                        'breads': 'BD',
-                        'customers': 'CU',
-                        'documents': 'DOC',
-                              })
+    bdb_config = BarelyDBConfig(
+        name='bakery',
+        path_depth=1,
+        buid_types={'ingrediences': 'IG', 'doughs': 'DG', 'breads': 'BD', 'customers': 'CU', 'documents': 'DOC',},
+    )
 
     bdb_config.save(base_path, create_path=True)
-    
+
     bdb = BarelyDB(base_path=base_path)
-    bdb.load_entities()        
-
-
-    
+    bdb.load_entities()

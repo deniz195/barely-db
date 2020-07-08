@@ -4,7 +4,7 @@ import sys
 
 from pathlib import Path
 
-__all__ = ["DefaultErrorHandler"]
+__all__ = ['DefaultErrorHandler']
 
 
 class DefaultErrorHandler(object):

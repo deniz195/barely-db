@@ -18,16 +18,16 @@ from .file_management import *
 # Naming conventions: https://swift.org/documentation/api-design-guidelines/#strive-for-fluent-usage
 
 __all__ = [
-    "BarelyDB",
-    "BarelyDBConfig",
-    "BarelyDBSystemConfig",
-    "BarelyDBEntity",
-    "FileManager",
-    "FileNameAnalyzer",
-    "serialize_to_file",
-    "open_in_explorer",
-    "ClassFileSerializer",
-    "cattr_json_serialize",
+    'BarelyDB',
+    'BarelyDBConfig',
+    'BarelyDBSystemConfig',
+    'BarelyDBEntity',
+    'FileManager',
+    'FileNameAnalyzer',
+    'serialize_to_file',
+    'open_in_explorer',
+    'ClassFileSerializer',
+    'cattr_json_serialize',
 ]
 
 # create logger
@@ -41,7 +41,7 @@ def _reload_module():
     import importlib
 
     current_module = sys.modules[__name__]
-    module_logger.info("Reloading module %s" % __name__)
+    module_logger.info('Reloading module %s' % __name__)
     importlib.reload(current_module)
 
 
@@ -83,16 +83,16 @@ class BarelyDB(object):
             for def_base_path in default_base_path:
                 if os.path.exists(def_base_path):
                     base_path = def_base_path
-                    self.logger.info(f"Using default path {base_path}")
+                    self.logger.info(f'Using default path {base_path}')
                     break
 
         if base_path is None:
-            raise RuntimeError("Could not automatically determine base path of database!")
+            raise RuntimeError('Could not automatically determine base path of database!')
 
         self.config = BarelyDBConfig.load(base_path)
 
         if path_depth:
-            self.logger.warning("Deprecated: path_depth in constructor is deprecated!")
+            self.logger.warning('Deprecated: path_depth in constructor is deprecated!')
 
         self.auto_reload_components = auto_reload_components
 
@@ -106,10 +106,10 @@ class BarelyDB(object):
         self._MyBUIDParser = GenericBUIDParser.create_class(self.config.buid_types)
 
         self.buid_normalizer = self.BUIDParser(
-            ignore_unknown=True, mode="unique", warn_empty=True, allow_components=False
+            ignore_unknown=True, mode='unique', warn_empty=True, allow_components=False
         )
 
-        self.buid_scan = self.BUIDParser(ignore_unknown=True, mode="first", warn_empty=False, allow_components=False)
+        self.buid_scan = self.BUIDParser(ignore_unknown=True, mode='first', warn_empty=False, allow_components=False)
 
         self.known_bases = self.config.known_bases
         self.register_error_handler(None)
@@ -141,8 +141,8 @@ class BarelyDB(object):
     def known_bases(self, value):
         # value = [str(estimate_pure_path(p)) for p in value]
         for p in value:
-            if p[-1] not in ["/", "\\"]:
-                module_logger.error(f"Known base {p} does not end in / or \\ - consider fixing!")
+            if p[-1] not in ['/', '\\']:
+                module_logger.error(f'Known base {p} does not end in / or \\ - consider fixing!')
 
         self._known_bases = value
         self.known_bases_re = [re.compile(re.escape(b), re.IGNORECASE) for b in self._known_bases]
@@ -156,7 +156,7 @@ class BarelyDB(object):
         return self._MyBUIDParser
 
     def __repr__(self):
-        return f"{self.__class__.__qualname__}(name={self.name} @ {self.base_path} + {self.path_depth})"
+        return f'{self.__class__.__qualname__}(name={self.name} @ {self.base_path} + {self.path_depth})'
 
     def __getitem__(self, buid):
         return self.get_entity(buid)
@@ -169,19 +169,19 @@ class BarelyDB(object):
         return list(self.entity_paths.keys())
 
     def resolved_file(self, filename):
-        base_path_str = f"{str(self.base_path)}{os.sep}"
-        base_path_str = base_path_str.replace("\\", "\\\\")
+        base_path_str = f'{str(self.base_path)}{os.sep}'
+        base_path_str = base_path_str.replace('\\', '\\\\')
         # check if path structure of filename is Windows-like
         is_windows = False
         is_URL_like = False
-        if "\\" in filename:
+        if '\\' in filename:
             is_windows = True
-        elif "://" in filename:
+        elif '://' in filename:
             is_URL_like = True
 
         try:
             found_re = next((r for r in self.known_bases_re if r.match(filename)))
-            filename_rel = found_re.sub("", filename)
+            filename_rel = found_re.sub('', filename)
 
             # This line works on the assumptions that relative posix paths
             # are always valid as relative windows paths
@@ -210,7 +210,7 @@ class BarelyDB(object):
             file_rel_recover = self.relative_file(file_abs)
             file_abs_recover = str(self.base_path.joinpath(file_rel_recover).absolute().resolve())
         except ValueError:
-            raise ValueError(f"Given relative file name is not result in a file in the given database! ({file_rel})")
+            raise ValueError(f'Given relative file name is not result in a file in the given database! ({file_rel})')
 
         return str(file_abs_recover)
 
@@ -240,7 +240,7 @@ class BarelyDB(object):
         self._duplicate_buid = [item for item, count in self._duplicate_buid_count.items() if item and count > 1]
 
         self.entity_paths = {buid: path for buid, path in candidates_buid if buid is not None}
-        self.logger.info(f"Entities found: {len(self.entity_paths)}")
+        self.logger.info(f'Entities found: {len(self.entity_paths)}')
 
         self.check_for_duplicates(verbose=verbose)
         self.refresh_buid_type_paths(verbose=verbose)
@@ -251,7 +251,7 @@ class BarelyDB(object):
         duplicate_buid = self._duplicate_buid
 
         if duplicate_buid:
-            self.logger.error(f"Following entities have multiple paths/folders: {duplicate_buid}")
+            self.logger.error(f'Following entities have multiple paths/folders: {duplicate_buid}')
 
         return bool(duplicate_buid)
 
@@ -274,7 +274,7 @@ class BarelyDB(object):
                         pass
                     else:
                         module_logger.warning(
-                            f"Entity {buid} has a base path that does not match with other entities of the same type ({buid_type})!"
+                            f'Entity {buid} has a base path that does not match with other entities of the same type ({buid_type})!'
                         )
                         buid_types_done.add(buid_type)
                 else:
@@ -283,7 +283,7 @@ class BarelyDB(object):
 
         if verbose:
             for buid_type, buid_path in self.buid_type_paths.items():
-                self.logger.info(f"{buid_type} --> {buid_path}")
+                self.logger.info(f'{buid_type} --> {buid_path}')
 
     def load_components(self, buid):
         entity_path = self.get_entity_path(buid)
@@ -310,8 +310,8 @@ class BarelyDB(object):
     def get_entity_name(self, buid):
         path = self.get_entity_path(buid)
         name_raw = Path(path).parts[-1]
-        name_raw = name_raw.replace(buid, "")
-        if name_raw[0] in [" ", "_"]:
+        name_raw = name_raw.replace(buid, '')
+        if name_raw[0] in [' ', '_']:
             name_raw = name_raw[1:]
 
         return name_raw
@@ -331,11 +331,11 @@ class BarelyDB(object):
         if component in component_paths:
             return component_paths[component]
         else:
-            raise FileNotFoundError(f"No path for component {component} in {buid}!")
+            raise FileNotFoundError(f'No path for component {component} in {buid}!')
 
     def create_new_entity(self, *, name, after=None, buid=None, reload=True):
         if not buid and not after:
-            raise ValueError("create_new_entity needs either after or buid parameter!")
+            raise ValueError('create_new_entity needs either after or buid parameter!')
 
         if not buid:
             buid = self._get_free_buid(after)[0]
@@ -379,11 +379,11 @@ class BarelyDB(object):
             pass
 
         if buid_type not in self.buid_type_paths:
-            raise ValueError(f"Do not know where to put entities of type {buid_type}!")
+            raise ValueError(f'Do not know where to put entities of type {buid_type}!')
 
         # create new path
         buid_base_path = Path(self.buid_type_paths[buid_type])
-        buid_path = buid_base_path.joinpath(f"{buid}_{name}")
+        buid_path = buid_base_path.joinpath(f'{buid}_{name}')
 
         buid_path = buid_path.absolute().resolve()
 
@@ -400,7 +400,7 @@ class BarelyDB(object):
         files = Path(path).glob(glob)
 
         if must_contain_buid:
-            buid_p = self.BUIDParser(ignore_unknown=False, mode="first", warn_empty=False)
+            buid_p = self.BUIDParser(ignore_unknown=False, mode='first', warn_empty=False)
             files_sel = [fn for fn in files if (buid_p(fn) == buid)]
             files = files_sel
 
@@ -429,14 +429,14 @@ class BarelyDBEntity(object):
         self._bdb = parent_bdb
         self.path_converter = parent_bdb.path_converter
 
-        buid_p = self.bdb.BUIDParser(ignore_unknown=False, mode="first", warn_empty=True, allow_components=False)
+        buid_p = self.bdb.BUIDParser(ignore_unknown=False, mode='first', warn_empty=True, allow_components=False)
         self._buid = buid_p(buid)
 
-        buid_ent_p = self.bdb.BUIDParser(ignore_unknown=False, mode="first", warn_empty=True, allow_components=False)
+        buid_ent_p = self.bdb.BUIDParser(ignore_unknown=False, mode='first', warn_empty=True, allow_components=False)
 
         self._buid_entity = buid_ent_p(buid)
 
-        buid_comp_p = self.bdb.BUIDParser(ignore_unknown=False, mode="first", warn_empty=False, allow_components=False)
+        buid_comp_p = self.bdb.BUIDParser(ignore_unknown=False, mode='first', warn_empty=False, allow_components=False)
 
         self.component = buid_comp_p.parse_component(buid)
 
@@ -446,13 +446,13 @@ class BarelyDBEntity(object):
 
             components = self.components
             if len(components) > 6:
-                comp = f", {len(components)} components"
+                comp = f', {len(components)} components'
             else:
-                comp = f", components={components}" if components else ""
+                comp = f', components={components}' if components else ''
 
         except KeyError:
-            name = "<does not exist!>"
-            comp = ""
+            name = '<does not exist!>'
+            comp = ''
 
         return f"{self.__class__.__qualname__}('{self.buid_with_component}', {name}{comp})"
 
@@ -469,7 +469,7 @@ class BarelyDBEntity(object):
 
     @property
     def buid_with_component(self):
-        return self._buid + (f"-{self.component}" if self.component is not None else "")
+        return self._buid + (f'-{self.component}' if self.component is not None else '')
 
     @property
     def bdb(self):
@@ -529,20 +529,20 @@ class BarelyDBEntity(object):
     def resolve_relative_path(self, path):
         base_bath = Path(self.path)
 
-        if type(path) in set([type(""), type(Path())]):
+        if type(path) in set([type(''), type(Path())]):
             path_resolved = str(base_bath.joinpath(path).absolute().resolve())
         elif isinstance(path, Sequence):
             return [self.resolve_relative_path(p) for p in path]
         else:
-            raise TypeError("path needs to be str, Path, or Sequence (list etc.)!")
+            raise TypeError('path needs to be str, Path, or Sequence (list etc.)!')
 
         return path_resolved
 
     def make_file_manager(
         self,
-        raw_path="./",
-        export_path="./",
-        export_prefix="",
+        raw_path='./',
+        export_path='./',
+        export_prefix='',
         secondary_data_paths=[],
         auto_string=True,
         auto_remove_duplicates=True,
@@ -578,13 +578,13 @@ class BarelyDBEntity(object):
 
         existing_path = self.component_paths.get(component, None)
         if existing_path:
-            self.logger.warning(f"Component {component} already exists! {str(existing_path)}")
+            self.logger.warning(f'Component {component} already exists! {str(existing_path)}')
             return existing_path
 
         base_bath = self.bdb.get_entity_path(self.buid_entity)
-        path_name = f"-{component}"
+        path_name = f'-{component}'
         if name is not None:
-            path_name += f"_{str(name)}"
+            path_name += f'_{str(name)}'
 
         component_path = base_bath.joinpath(path_name)
         component_path.mkdir(parents=False, exist_ok=True)
@@ -607,7 +607,7 @@ class BarelyDBEntity(object):
         try:
             obj = object_class.load_from_entity(self)
         except (FileNotFoundError, KeyError):
-            error_msg = f"No {object_class.__qualname__} object found for {self.buid_with_component}!"
+            error_msg = f'No {object_class.__qualname__} object found for {self.buid_with_component}!'
             if not quiet:
                 self.logger.warning(error_msg)
             if fail_to_exception:
@@ -615,8 +615,7 @@ class BarelyDBEntity(object):
 
         if obj is None and default is not None:
             if not quiet:
-                self.logger.warning(f"Using default object!")
+                self.logger.warning(f'Using default object!')
             obj = copy.copy(default)
 
         return obj
-

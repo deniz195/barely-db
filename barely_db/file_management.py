@@ -30,17 +30,17 @@ from .error_handler import DefaultErrorHandler
 
 
 __all__ = [
-    "estimate_pure_path",
-    "normalize_pure_path",
-    "extend_long_path_on_windows",
-    "open_in_explorer",
-    "FileManager",
-    "FileNameAnalyzer",
-    "copy_files_with_jupyter_button",
-    "serialize_to_file",
-    "RevisionFile",
-    "ClassFileSerializer",
-    "cattr_json_serialize",
+    'estimate_pure_path',
+    'normalize_pure_path',
+    'extend_long_path_on_windows',
+    'open_in_explorer',
+    'FileManager',
+    'FileNameAnalyzer',
+    'copy_files_with_jupyter_button',
+    'serialize_to_file',
+    'RevisionFile',
+    'ClassFileSerializer',
+    'cattr_json_serialize',
 ]
 
 # from chunked_object import *
@@ -56,7 +56,7 @@ def _reload_module():
     import importlib
 
     current_module = sys.modules[__name__]
-    module_logger.info("Reloading module %s" % __name__)
+    module_logger.info('Reloading module %s' % __name__)
     importlib.reload(current_module)
 
 
@@ -72,9 +72,9 @@ def normalize_pure_path(p):
 
 
 def extend_long_path_on_windows(fn, long_windows_path_limit=150):
-    prefix = "\\\\?\\"
+    prefix = '\\\\?\\'
 
-    if os.name == "nt":
+    if os.name == 'nt':
         if fn[0:4] != prefix and len(fn) > long_windows_path_limit:
             return prefix + fn
 
@@ -84,22 +84,22 @@ def extend_long_path_on_windows(fn, long_windows_path_limit=150):
 def open_in_explorer(path, start=False):
     p = Path(path)
     if p.is_dir():
-        module_logger.info(f"Opening explorer for folder {path}")
-        subprocess.Popen(rf"explorer {path}")
+        module_logger.info(f'Opening explorer for folder {path}')
+        subprocess.Popen(rf'explorer {path}')
     elif start:
-        module_logger.info(f"Opening file {path}")
-        subprocess.Popen(rf"explorer /start, {path}")
+        module_logger.info(f'Opening file {path}')
+        subprocess.Popen(rf'explorer /start, {path}')
     else:
-        module_logger.info(f"Opening explorer for file {path}")
-        subprocess.Popen(rf"explorer /select, {path}")
+        module_logger.info(f'Opening explorer for file {path}')
+        subprocess.Popen(rf'explorer /select, {path}')
 
 
 class FileManager(object):
     def __init__(
         self,
-        raw_path="./RAW",
-        export_path="./export",
-        export_prefix="",
+        raw_path='./RAW',
+        export_path='./export',
+        export_prefix='',
         secondary_data_paths=[],
         auto_string=True,
         auto_remove_duplicates=True,
@@ -124,7 +124,7 @@ class FileManager(object):
             if not p.exists():
                 raise FileNotFoundError(str(p))
 
-    def set_export_path(self, export_path, export_prefix=""):
+    def set_export_path(self, export_path, export_prefix=''):
         self.export_prefix = extend_long_path_on_windows(str(export_prefix), self.long_windows_path_limit)
         self.export_path = Path(export_path)
         self.export_path.mkdir(parents=True, exist_ok=True)
@@ -186,8 +186,8 @@ class FileManager(object):
         # remove stupid google drive duplicates
         fns_filtered = []
         for fn in fns:
-            if bool(re.findall(" \(1\)", fn)):
-                module_logger.warning(f"Removed google drive dupplicate from result! ({fn})")
+            if bool(re.findall(' \(1\)', fn)):
+                module_logger.warning(f'Removed google drive dupplicate from result! ({fn})')
             else:
                 fns_filtered.append(fn)
 
@@ -195,16 +195,16 @@ class FileManager(object):
 
     def _get_valid_filename(self, fn):
         # fn = str(fn).strip().replace(' ', '_')
-        return re.sub(r'[\\/:"*?<>|]+', "", fn)
+        return re.sub(r'[\\/:"*?<>|]+', '', fn)
 
-    def make_export_file_name(self, base_file, extension="", absolute=True):
+    def make_export_file_name(self, base_file, extension='', absolute=True):
         bfn = Path(base_file)
 
         fn = self.export_prefix + bfn.name + extension
         fn_val = self._get_valid_filename(fn)
         if fn_val != fn:
             fn = fn_val
-            module_logger.warning("Filename has been regularized! (%s)" % fn)
+            module_logger.warning('Filename has been regularized! (%s)' % fn)
 
         exp_fn = Path(self.export_path, fn)
         if absolute:
@@ -244,70 +244,70 @@ class FileNameAnalyzer(object):
         self.prio_entries = []
         self.regex_entries = []
         self.logger = module_logger
-        self.last_filename = ""
+        self.last_filename = ''
 
     def add_regex(self, regex, param_name, numeric=False, required=True, converter=None):
         regex_entry = {
-            "regex": regex,
-            "param_name": param_name,
-            "numeric": numeric,
-            "required": required,
-            "converter": converter,
+            'regex': regex,
+            'param_name': param_name,
+            'numeric': numeric,
+            'required': required,
+            'converter': converter,
         }
         self.regex_entries.append(regex_entry)
         pass
 
     def add_prior_knowledge(self, match_regex, **kwd):
-        prio_entry = {"regex": match_regex, "values": dict(**kwd)}
+        prio_entry = {'regex': match_regex, 'values': dict(**kwd)}
         self.prio_entries.append(prio_entry)
         pass
 
     def analyze(self, filename):
-        info = {"filename": filename}
+        info = {'filename': filename}
         self.last_filename = filename
 
-        info["file_mod_time"] = os.path.getmtime(filename)
+        info['file_mod_time'] = os.path.getmtime(filename)
 
         for r in self.regex_entries:
-            results = re.findall(r["regex"], filename)
+            results = re.findall(r['regex'], filename)
             results = list(set(results))  # remove dupplicates!
 
             if len(results) == 0:
-                if r["required"]:
-                    self.logger.warning("Required parameter (%s) not found!" % r["param_name"])
+                if r['required']:
+                    self.logger.warning('Required parameter (%s) not found!' % r['param_name'])
             elif len(results) >= 1:
                 if len(results) > 1:
                     # self.logger.warning('Parameter (%s) ambiguous! Using first of %s.' % (r['param_name'], str(results)))
                     # see if we only look in the filename itself we get uniqueness
-                    results_name_only = re.findall(r["regex"], Path(filename).name)
+                    results_name_only = re.findall(r['regex'], Path(filename).name)
                     results_name_only = list(set(results_name_only))  # remove dupplicates!
 
                     if len(results_name_only) == 1:
                         results = results_name_only
                     elif len(results_name_only) == 0:
                         self.logger.warning(
-                            "Parameter (%s) ambiguous in the path, with no info in the filename! This might be a problem. Using first of %s."
-                            % (r["param_name"], str(results))
+                            'Parameter (%s) ambiguous in the path, with no info in the filename! This might be a problem. Using first of %s.'
+                            % (r['param_name'], str(results))
                         )
                     else:
                         results = results_name_only
                         self.logger.warning(
-                            "Parameter (%s) ambiguous in the filename! This might be a problem. Using first of %s."
-                            % (r["param_name"], str(results))
+                            'Parameter (%s) ambiguous in the filename! This might be a problem. Using first of %s.'
+                            % (r['param_name'], str(results))
                         )
 
-                if r["converter"]:
-                    results[0] = r["converter"](results[0])
+                if r['converter']:
+                    results[0] = r['converter'](results[0])
 
-                if r["numeric"]:
-                    info[r["param_name"]] = float(results[0])
+                if r['numeric']:
+                    info[r['param_name']] = float(results[0])
                 else:
-                    info[r["param_name"]] = results[0]
+                    info[r['param_name']] = results[0]
 
         for p in self.prio_entries:
-            if re.findall(p["regex"], filename):
+            if re.findall(p['regex'], filename):
                 # self.logger.debug('Parameter (%s) matches %s!' % (p['regex'], filename))
-                info.update(p["values"])
+                info.update(p['values'])
 
         return info
 
@@ -316,24 +316,24 @@ class FileNameAnalyzer(object):
             filename = self.last_filename
 
         self.last_filename = filename
-        self.logger.info("Using %s" % filename)
+        self.logger.info('Using %s' % filename)
 
         result = re.findall(regex, filename)
 
-        self.logger.info("%s yields %s" % (regex, str(result)))
+        self.logger.info('%s yields %s' % (regex, str(result)))
 
         return result
 
     def add_battrion_defaults(self):
-        self.add_regex("(EE\d{2,4})", "experiment_number", required=True)
-        self.add_regex("(EE\d{2,4}[a-zA-Z]?)", "experiment_number_sub", required=False)
-        self.add_regex("(CL\d{2,4})", "cell_type", required=False)
-        self.add_regex("CL\d{2,4}-(C\d{1,2})", "cell_number", required=False)
-        self.add_regex("(CL\d{2,4}-C\d{1,2})", "cell_number_full", required=False)
-        self.add_regex("(\d{2,4})degC", "temp", numeric=True, required=False)
-        self.add_regex("([6-9]\d)degC", "temp_cutoff", numeric=True, required=False)
-        self.add_regex("(\dp\dV)", "volt_nom_raw", numeric=False, required=False)
-        self.add_regex("(\d{2,4})_MB", "step_number_mb", numeric=False, required=False)
+        self.add_regex('(EE\d{2,4})', 'experiment_number', required=True)
+        self.add_regex('(EE\d{2,4}[a-zA-Z]?)', 'experiment_number_sub', required=False)
+        self.add_regex('(CL\d{2,4})', 'cell_type', required=False)
+        self.add_regex('CL\d{2,4}-(C\d{1,2})', 'cell_number', required=False)
+        self.add_regex('(CL\d{2,4}-C\d{1,2})', 'cell_number_full', required=False)
+        self.add_regex('(\d{2,4})degC', 'temp', numeric=True, required=False)
+        self.add_regex('([6-9]\d)degC', 'temp_cutoff', numeric=True, required=False)
+        self.add_regex('(\dp\dV)', 'volt_nom_raw', numeric=False, required=False)
+        self.add_regex('(\d{2,4})_MB', 'step_number_mb', numeric=False, required=False)
 
 
 def copy_files_with_jupyter_button(fns, target_path, dry_run=False, show_button=True):
@@ -342,7 +342,7 @@ def copy_files_with_jupyter_button(fns, target_path, dry_run=False, show_button=
     def copy_files(button):
         import shutil
 
-        progress = widgets.IntProgress(min=0, max=len(fns), value=0, description="Copying...")
+        progress = widgets.IntProgress(min=0, max=len(fns), value=0, description='Copying...')
         display(progress)
 
         for fn in fns:
@@ -354,10 +354,10 @@ def copy_files_with_jupyter_button(fns, target_path, dry_run=False, show_button=
                 shutil.copyfile(fn, t_fn)
             progress.value += 1
 
-        progress.description = "Done!"
+        progress.description = 'Done!'
 
     button = widgets.Button(
-        description=f"Copy files ({len(fns)}) to {target_path}", layout=widgets.Layout(width="90%"),
+        description=f'Copy files ({len(fns)}) to {target_path}', layout=widgets.Layout(width='90%'),
     )
     button.on_click(copy_files)
 
@@ -376,9 +376,9 @@ class RevisionFile(object):
 
     def __attrs_post_init__(self):
         if self.revision is None:
-            object.__setattr__(self, "full_name", f"{self.base_name}")
+            object.__setattr__(self, 'full_name', f'{self.base_name}')
         else:
-            object.__setattr__(self, "full_name", f"{self.base_name}.{self.revision:d}")
+            object.__setattr__(self, 'full_name', f'{self.base_name}.{self.revision:d}')
 
     def exists(self):
         return Path(self.full_name).exists()
@@ -412,14 +412,14 @@ class RevisionFile(object):
 
     def old_revision_folder_exists(self):
         path_to_file = Path(self.full_name).parent
-        path_to_old_rev = path_to_file.joinpath(".bdb_old")
+        path_to_old_rev = path_to_file.joinpath('.bdb_old')
         return path_to_old_rev.exists(), path_to_old_rev
 
     def create_new_revision(self):
         if self.exists():
             new_rev = self.get_new_revision()
             shutil.move(self.base_name, new_rev.full_name)
-            module_logger.info(f"Created new revision ({new_rev.revision}) of file {self.base_name}!")
+            module_logger.info(f'Created new revision ({new_rev.revision}) of file {self.base_name}!')
 
     def get_last_revision(self):
         old_rev_exists, path_to_old_rev = self.old_revision_folder_exists()
@@ -447,7 +447,7 @@ class RevisionFile(object):
         if last_rev is not None:
             if filecmp.cmp(self.base_name, last_rev.full_name, shallow=False):
                 os.unlink(last_rev.full_name)
-                module_logger.info(f"Last revision of {self.base_name} matches current version and is removed!")
+                module_logger.info(f'Last revision of {self.base_name} matches current version and is removed!')
 
 
 class ClassFileSerializer(object):
@@ -459,10 +459,10 @@ class ClassFileSerializer(object):
 
     base_file_identifier = None
     prepend_buid = False
-    prefix = ""
-    suffix = ""
-    serialize_method = "serialize"
-    deserialize_classmethod = "deserialize"
+    prefix = ''
+    suffix = ''
+    serialize_method = 'serialize'
+    deserialize_classmethod = 'deserialize'
     allow_parent = False
     binary = False
 
@@ -470,10 +470,10 @@ class ClassFileSerializer(object):
         self,
         base_file_identifier=None,
         prepend_buid=False,
-        prefix="",
-        suffix="",
-        serialize_method="serialize",
-        deserialize_classmethod="deserialize",
+        prefix='',
+        suffix='',
+        serialize_method='serialize',
+        deserialize_classmethod='deserialize',
         allow_parent=False,
         binary=False,
     ):
@@ -494,7 +494,7 @@ class ClassFileSerializer(object):
         for class_name, cfs in cls.cls_registry.items():
             if cfs.match_filename(fn):
                 found_cls = cfs.cls
-                module_logger.debug(f"Found class {found_cls.__qualname__} for file {Path(fn).name}")
+                module_logger.debug(f'Found class {found_cls.__qualname__} for file {Path(fn).name}')
 
         return found_cls
 
@@ -506,9 +506,9 @@ class ClassFileSerializer(object):
             ClassFileSerializer.filename_pattern_registry[self.get_filename_regex()] = self
 
     def get_filename_regex(self, file_identifier=None):
-        rg = r""
+        rg = r''
         if self.prepend_buid:
-            rg += GenericBUIDParser.buid_comp_regex.pattern + "_"
+            rg += GenericBUIDParser.buid_comp_regex.pattern + '_'
         if self.prefix:
             rg += self.prefix
         if file_identifier:
@@ -516,7 +516,7 @@ class ClassFileSerializer(object):
         elif self.base_file_identifier:
             rg += self.base_file_identifier
         else:
-            rg += "(.*)"
+            rg += '(.*)'
 
         if self.suffix:
             rg += self.suffix
@@ -533,11 +533,11 @@ class ClassFileSerializer(object):
 
         if file_identifier is None:
             raise ValueError(
-                "No file_identifier given. Either set base_file_identifier in serialize_to_file"
-                ", or provide file_identifier to this function call."
+                'No file_identifier given. Either set base_file_identifier in serialize_to_file'
+                ', or provide file_identifier to this function call.'
             )
 
-        export_prefix = f"{entity.buid_with_component}_" if self.prepend_buid else ""
+        export_prefix = f'{entity.buid_with_component}_' if self.prepend_buid else ''
         export_prefix += self.prefix
 
         fm = entity.make_file_manager(export_prefix=export_prefix)
@@ -551,7 +551,7 @@ class ClassFileSerializer(object):
 
     def save_to_file(self, obj, filename, override=False, revision=True, use_suffix=False):
         if self.serialize_method is None:
-            module_logger.error(f"Object from class {obj.__class__.__qualname__} cannot be deserialized!")
+            module_logger.error(f'Object from class {obj.__class__.__qualname__} cannot be deserialized!')
             return None
 
         serialize = getattr(obj, self.serialize_method)
@@ -566,7 +566,7 @@ class ClassFileSerializer(object):
         serial_data = raw_data
 
         if filename is None:
-            raise ValueError("(Filename cannot be None!)")
+            raise ValueError('(Filename cannot be None!)')
 
         filename = extend_long_path_on_windows(str(filename))
 
@@ -575,31 +575,31 @@ class ClassFileSerializer(object):
             revision_file.create_new_revision()
 
         if Path(filename).exists() and not override:
-            module_logger.warning("File already exists. Skip. (consider override=True).")
+            module_logger.warning('File already exists. Skip. (consider override=True).')
         else:
             serial_data_binary = serial_data if self.binary else serial_data.encode()
 
-            with open(filename, "wb") as f:
+            with open(filename, 'wb') as f:
                 f.write(serial_data_binary)
-                module_logger.info(f"Config written to {filename}")
+                module_logger.info(f'Config written to {filename}')
 
             if revision:
                 revision_file.reduce_last_revision()
 
     def load_raw_from_file(self, filename):
         if filename is None:
-            raise FileNotFoundError("(Filename cannot be None!)")
+            raise FileNotFoundError('(Filename cannot be None!)')
 
         filename = extend_long_path_on_windows(str(filename))
 
-        with open(filename, "rb") as f:
+        with open(filename, 'rb') as f:
             file_data_binary = f.read()
             file_data = file_data_binary if self.binary else file_data_binary.decode()
         return file_data
 
     def load_from_file(self, filename, default=None, fail_to_default=False, error_handler=None):
         if self.deserialize_classmethod is None:
-            module_logger.error(f"Class {self.cls.__qualname__} cannot be deserialized!")
+            module_logger.error(f'Class {self.cls.__qualname__} cannot be deserialized!')
             return None
 
         deserialize = getattr(self.cls, self.deserialize_classmethod)
@@ -611,7 +611,7 @@ class ClassFileSerializer(object):
             if default is None and not fail_to_default:
                 raise
             else:
-                module_logger.info(f"Using default, because file not found ({filename}).")
+                module_logger.info(f'Using default, because file not found ({filename}).')
                 return default
 
         if error_handler is None:
@@ -683,11 +683,11 @@ class ClassFileSerializer(object):
             ent_buid = entity.buid_with_component
             if obj_buid is None:
                 module_logger.warning(
-                    f"Loaded object ({self.cls.__qualname__}) has empty buid, while the entity it was loaded from has not ({ent_buid})! Consider to fix this!"
+                    f'Loaded object ({self.cls.__qualname__}) has empty buid, while the entity it was loaded from has not ({ent_buid})! Consider to fix this!'
                 )
             elif obj_buid not in ent_buid:
                 module_logger.warning(
-                    f"Loaded object ({self.cls.__qualname__}) has different buid ({obj_buid}) then the entity it was loaded from ({ent_buid})! Consider to fix this!"
+                    f'Loaded object ({self.cls.__qualname__}) has different buid ({obj_buid}) then the entity it was loaded from ({ent_buid})! Consider to fix this!'
                 )
 
         except AttributeError as e:
@@ -704,10 +704,10 @@ class ClassFileSerializer(object):
 def serialize_to_file(
     base_file_identifier=None,
     prepend_buid=False,
-    prefix="",
-    suffix="",
-    serialize_method="serialize",
-    deserialize_classmethod="deserialize",
+    prefix='',
+    suffix='',
+    serialize_method='serialize',
+    deserialize_classmethod='deserialize',
     allow_parent=False,
     binary=False,
 ):
@@ -760,4 +760,3 @@ def cattr_json_serialize(cls):
     cls.deserialize = deserialize
 
     return cls
-

@@ -1,0 +1,15 @@
+-   repo: https://github.com/ambv/black
+    rev: stable
+    hooks:
+    - id: black
+-   repo: git://github.com/pre-commit/pre-commit-hooks
+    rev: v3.1.0
+    hooks:
+    -   id: trailing-whitespace
+    -   id: end-of-file-fixer
+    -   id: double-quote-string-fixer
+# -   repo: https://gitlab.com/pycqa/flake8
+    # rev: ''
+    # hooks:
+    # -   id: flake8
+    #     exclude: jupytext/

@@ -16,5 +16,3 @@ from barely_db.tools import *
 def test_checker(bdb):
 
     bc = BarelyDBChecker(bdb)
-
-    

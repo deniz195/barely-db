@@ -5,7 +5,7 @@ from pathlib import Path
 
 from . import BarelyDB
 
-__all__ = ["BarelyDBChecker", "BarelyDBSyncer"]
+__all__ = ['BarelyDBChecker', 'BarelyDBSyncer']
 
 # create logger
 module_logger = logging.getLogger(__name__)
@@ -18,7 +18,7 @@ def _reload_module():
     import importlib
 
     current_module = sys.modules[__name__]
-    module_logger.info("Reloading module %s" % __name__)
+    module_logger.info('Reloading module %s' % __name__)
     importlib.reload(current_module)
 
 
@@ -52,7 +52,7 @@ class BarelyDBChecker(object):
             for component in comps:
                 fns = ent.get_component_files(glob, component=component)
                 for fn in fns:
-                    yield f"{ent.buid}-{component}", fn
+                    yield f'{ent.buid}-{component}', fn
 
     def discover_files(self, glob, dependent_files_resolver=None):
         """ Iterate over all files in the database that match glob. Resolve
@@ -94,7 +94,7 @@ class BarelyDBSyncer(object):
 
     @dry_run.setter
     def dry_run(self, value):
-        self.logger.info(f"Setting dry run to {value}!")
+        self.logger.info(f'Setting dry run to {value}!')
         self._dry_run = value
 
     def __init__(self, bdb_source, bdb_target=None, dependent_files_resolver=None):
@@ -104,7 +104,7 @@ class BarelyDBSyncer(object):
         self.dependent_files_resolver = dependent_files_resolver
 
     def make_new_target_bdb(self, new_base_path):
-        module_logger.info(f"Making new bdb at {new_base_path}")
+        module_logger.info(f'Making new bdb at {new_base_path}')
         new_base_path.mkdir(parents=True, exist_ok=True)
         bdb_target = BarelyDB(base_path=new_base_path, path_depth=self.bdb_source.path_depth)
         self._bdb_target = bdb_target
@@ -124,10 +124,10 @@ class BarelyDBSyncer(object):
         new_path = self.translate_path_to_target(source_path)
 
         if self.dry_run:
-            self.logger.debug(f"[dryrun] Create {new_path}")
+            self.logger.debug(f'[dryrun] Create {new_path}')
         else:
             new_path.mkdir(parents=True, exist_ok=True)
-            self.logger.debug(f"Create {new_path}")
+            self.logger.debug(f'Create {new_path}')
 
         return new_path
 
@@ -137,13 +137,13 @@ class BarelyDBSyncer(object):
         try:
             if self.dry_run:
                 if not Path(source_path).exists():
-                    raise FileNotFoundError(f"File does not exists {source_path}")
-                self.logger.debug(f"[dryrun] Copy to {new_path}")
+                    raise FileNotFoundError(f'File does not exists {source_path}')
+                self.logger.debug(f'[dryrun] Copy to {new_path}')
             else:
-                self.logger.debug(f"Copy to {new_path}")
+                self.logger.debug(f'Copy to {new_path}')
                 parent = Path(new_path).parent
                 if not parent.exists():
-                    self.logger.debug(f"Making directory {parent}")
+                    self.logger.debug(f'Making directory {parent}')
                     parent.mkdir(parents=True, exist_ok=True)
 
                 shutil.copy2(source_path, new_path)
@@ -172,7 +172,7 @@ class BarelyDBSyncer(object):
                     self.mkdir_from_source(comp_path)
                     counter += 1
 
-        self.logger.info(f"Created {counter} directories")
+        self.logger.info(f'Created {counter} directories')
 
     def copy_files(self, glob, dependent_files_resolver=None):
         if dependent_files_resolver is None:
@@ -186,11 +186,11 @@ class BarelyDBSyncer(object):
             self.copy_file_from_source(fn)
             counter += 1
 
-        self.logger.info(f"Copied {counter} files")
+        self.logger.info(f'Copied {counter} files')
 
-    def copy_all(self, glob="*.yaml"):
+    def copy_all(self, glob='*.yaml'):
         self.copy_buid_types()
         self.copy_entities()
 
-        self.copy_files("*.yaml", dependent_files_resolver=self.dependent_files_resolver)
+        self.copy_files('*.yaml', dependent_files_resolver=self.dependent_files_resolver)
         self.bdb_target.load_entities()

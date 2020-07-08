@@ -12,15 +12,16 @@ def test_resolved_filename(bdb):
 
     assert bdb.absolute_file(fn_rel) == fn_ref
 
-    fn = 'G:\\My Drive\\Battrion_AG\\DATABASE\\Webs\\WB3001_SL\\-P1\\raw_peelforce\\P1-BE_peelforce_190411.tsv.plot.png'
+    fn = (
+        'G:\\My Drive\\Battrion_AG\\DATABASE\\Webs\\WB3001_SL\\-P1\\raw_peelforce\\P1-BE_peelforce_190411.tsv.plot.png'
+    )
     assert bdb.resolved_file(fn) == fn_ref
 
     fn = '/Volumes/GoogleDrive/Teamablagen/Database/Webs/WB3001_SL/-P1/raw_peelforce/P1-BE_peelforce_190411.tsv.plot.png'
-    assert bdb.resolved_file(fn) == fn_ref    
+    assert bdb.resolved_file(fn) == fn_ref
 
     fn = 'barely-db://Webs/WB3001_SL/-P1/raw_peelforce/P1-BE_peelforce_190411.tsv.plot.png'
-    assert bdb.resolved_file(fn) == fn_ref    
-    
-    with pytest.raises(ValueError):
-        fn_abs = bdb.absolute_file('../lala.yaml')     
+    assert bdb.resolved_file(fn) == fn_ref
 
+    with pytest.raises(ValueError):
+        fn_abs = bdb.absolute_file('../lala.yaml')
