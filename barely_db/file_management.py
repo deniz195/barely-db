@@ -220,7 +220,7 @@ class FileManager(object):
 
 
 class FileNameAnalyzer(object):
-    """
+    r"""
     Extracts information from file names
 
     Usage example:
