@@ -186,7 +186,7 @@ class FileManager(object):
         # remove stupid google drive duplicates
         fns_filtered = []
         for fn in fns:
-            if bool(re.findall(' \(1\)', fn)):
+            if bool(re.findall(r' \(1\)', fn)):
                 module_logger.warning(f'Removed google drive dupplicate from result! ({fn})')
             else:
                 fns_filtered.append(fn)
@@ -220,7 +220,7 @@ class FileManager(object):
 
 
 class FileNameAnalyzer(object):
-    """
+    r"""
     Extracts information from file names
 
     Usage example:
@@ -325,15 +325,15 @@ class FileNameAnalyzer(object):
         return result
 
     def add_battrion_defaults(self):
-        self.add_regex('(EE\d{2,4})', 'experiment_number', required=True)
-        self.add_regex('(EE\d{2,4}[a-zA-Z]?)', 'experiment_number_sub', required=False)
-        self.add_regex('(CL\d{2,4})', 'cell_type', required=False)
-        self.add_regex('CL\d{2,4}-(C\d{1,2})', 'cell_number', required=False)
-        self.add_regex('(CL\d{2,4}-C\d{1,2})', 'cell_number_full', required=False)
-        self.add_regex('(\d{2,4})degC', 'temp', numeric=True, required=False)
-        self.add_regex('([6-9]\d)degC', 'temp_cutoff', numeric=True, required=False)
-        self.add_regex('(\dp\dV)', 'volt_nom_raw', numeric=False, required=False)
-        self.add_regex('(\d{2,4})_MB', 'step_number_mb', numeric=False, required=False)
+        self.add_regex(r'(EE\d{2,4})', 'experiment_number', required=True)
+        self.add_regex(r'(EE\d{2,4}[a-zA-Z]?)', 'experiment_number_sub', required=False)
+        self.add_regex(r'(CL\d{2,4})', 'cell_type', required=False)
+        self.add_regex(r'CL\d{2,4}-(C\d{1,2})', 'cell_number', required=False)
+        self.add_regex(r'(CL\d{2,4}-C\d{1,2})', 'cell_number_full', required=False)
+        self.add_regex(r'(\d{2,4})degC', 'temp', numeric=True, required=False)
+        self.add_regex(r'([6-9]\d)degC', 'temp_cutoff', numeric=True, required=False)
+        self.add_regex(r'(\dp\dV)', 'volt_nom_raw', numeric=False, required=False)
+        self.add_regex(r'(\d{2,4})_MB', 'step_number_mb', numeric=False, required=False)
 
 
 def copy_files_with_jupyter_button(fns, target_path, dry_run=False, show_button=True):
