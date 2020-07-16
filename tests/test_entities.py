@@ -113,3 +113,16 @@ def test_get_entity_path(bdb):
         path = str(db_entity_paths[entity])
         assert path == all_entity_paths[counter]
         counter += 1
+
+
+def test_entity_like(bdb):
+    class TestEntity(BarelyDBEntity):
+        pass
+
+    ent = bdb['WB3001']
+    test_ent = TestEntity.like(ent)
+
+    assert ent == test_ent
+
+    assert TestEntity.like(None) == None
+
