@@ -147,3 +147,13 @@ def test_entity_in(bdb):
     assert all(isinstance(ent.get_component_entity(c), BarelyDBEntity) for c in ent.components)
 
     assert bdb['WB3001']['P1'].buid_with_component == 'WB3001-P1'
+
+    assert bdb['WB3001'].exists
+    assert bdb['WB3001'].entity_exists
+
+    assert bdb['WB3001-P1'].exists
+    assert bdb['WB3001-P1'].entity_exists
+
+    assert not bdb['WB3001-X99'].exists
+    assert bdb['WB3001-X99'].entity_exists
+

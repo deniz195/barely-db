@@ -519,6 +519,14 @@ class BarelyDBEntity(object):
         return self.get_component_entity(component)
 
     @property
+    def entity_exists(self):
+        return self.buid_entity in self.bdb
+
+    @property
+    def exists(self):
+        return self.entity_exists and (self.component is None or self.component in self.components)
+
+    @property
     def path(self):
         return self.entity_path if self.component is None else self.component_path
 
