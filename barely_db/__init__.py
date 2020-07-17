@@ -164,6 +164,10 @@ class BarelyDB(object):
     def get_entity(self, buid):
         return BarelyDBEntity(buid, self)
 
+    def __contains__(self, buid):
+        buid = self.buid_normalizer(buid)
+        return buid in self.entity_paths
+
     @property
     def entities(self):
         return list(self.entity_paths.keys())
@@ -427,7 +431,7 @@ class BarelyDBEntity(object):
 
         return cls(buid=entity.buid_with_component, parent_bdb=entity.bdb)
 
-    def __init__(self, buid, parent_bdb):
+    def __init__(self, buid, parent_bdb, component=None):
         self.logger = parent_bdb.logger
         self._bdb = parent_bdb
         self.path_converter = parent_bdb.path_converter
@@ -436,12 +440,15 @@ class BarelyDBEntity(object):
         self._buid = buid_p(buid)
 
         buid_ent_p = self.bdb.BUIDParser(ignore_unknown=False, mode='first', warn_empty=True, allow_components=False)
-
         self._buid_entity = buid_ent_p(buid)
 
-        buid_comp_p = self.bdb.BUIDParser(ignore_unknown=False, mode='first', warn_empty=False, allow_components=False)
+        if component is None:
+            buid_comp_p = self.bdb.BUIDParser(
+                ignore_unknown=False, mode='first', warn_empty=False, allow_components=False
+            )
+            component = buid_comp_p.parse_component(buid)
 
-        self.component = buid_comp_p.parse_component(buid)
+        self.component = component
 
     def __repr__(self):
         try:
@@ -501,6 +508,15 @@ class BarelyDBEntity(object):
     @property
     def components(self):
         return list(self.component_paths.keys())
+
+    def __contains__(self, component):
+        return component in self.components
+
+    def get_component_entity(self, component):
+        return self.__class__(buid=self.buid, parent_bdb=self.bdb, component=component)
+
+    def __getitem__(self, component):
+        return self.get_component_entity(component)
 
     @property
     def path(self):
