@@ -126,3 +126,24 @@ def test_entity_like(bdb):
 
     assert TestEntity.like(None) == None
 
+
+def test_entity_in(bdb):
+
+    ent = bdb['WB3001']
+    assert ent is not None
+
+    assert 'WB3001' in bdb
+    assert 'WB8888' not in bdb  # this needs to be a nonexisting buid
+
+    assert 'WB3001-X99' in bdb  # component should be igored
+
+    ent = bdb['WB3001']
+    assert ent is not None
+
+    assert ent.components
+    assert all(c in ent for c in ent.components)
+    assert all(isinstance(ent[c], BarelyDBEntity) for c in ent.components)
+
+    assert all(isinstance(ent.get_component_entity(c), BarelyDBEntity) for c in ent.components)
+
+    assert bdb['WB3001']['P1'].buid_with_component == 'WB3001-P1'
