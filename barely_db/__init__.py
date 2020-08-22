@@ -311,14 +311,18 @@ class BarelyDB(object):
         path = path.absolute().resolve()
         return path
 
-    def get_entity_name(self, buid):
-        path = self.get_entity_path(buid)
+    @staticmethod
+    def _extract_name_from_path(path, identifier):
         name_raw = Path(path).parts[-1]
-        name_raw = name_raw.replace(buid, '')
+        name_raw = name_raw.replace(identifier, '')
         if name_raw[0] in [' ', '_']:
             name_raw = name_raw[1:]
 
         return name_raw
+
+    def get_entity_name(self, buid):
+        path = self.get_entity_path(buid)
+        return self._extract_name_from_path(path, buid)
 
     def get_component_paths(self, buid):
         buid = self.buid_normalizer(buid)
@@ -336,6 +340,10 @@ class BarelyDB(object):
             return component_paths[component]
         else:
             raise FileNotFoundError(f'No path for component {component} in {buid}!')
+
+    def get_component_name(self, buid, component):
+        path = self.get_component_path(buid, component)
+        return self._extract_name_from_path(path, '-' + component)
 
     def create_new_entity(self, *, name, after=None, buid=None, reload=True):
         if not buid and not after:
@@ -500,6 +508,10 @@ class BarelyDBEntity(object):
     @property
     def component_path(self):
         return self.bdb.get_component_path(self.buid_entity, self.component)
+
+    @property
+    def component_name(self):
+        return self.bdb.get_component_name(self.buid, self.component)
 
     @property
     def component_paths(self):
